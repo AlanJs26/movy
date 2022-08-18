@@ -1,64 +1,58 @@
-from typing import List
+from typing import List, Union,Dict,Any
 import re
 from classes import *
+from rich import print
 
 type_name_pattern = re.compile(r'^\s*\[(.+?)]')
+block_regex = re.compile(r'\[(?P<action>.+)\].+{\s*\n(?P<content>(.+\n\n*)+)\s*}')
+input_rule_regex = re.compile(r'(?P<action>\[[^\[\]]+\]\s*)?(((?P<regex>[^{\s][^\[\]\s]+\s*))?(?P<name>\[\[.+]]\s*)|(?P<regex2>((?<=])|^)\s*[^{\s\[\]][^\[\]\s]+\s*)|(?P<block>\[.+\]\s*\{\n(.+?\n\n*)+\s*}))(?P<operator>\band\b)?$', flags=re.MULTILINE)
 
 def parse_inner_block(text):
-    outer_rule_type = re.search(type_name_pattern, text.splitlines()[0])
-    if outer_rule_type:
-        outer_rule_type = outer_rule_type.group(1)
+
+    outer_rule_match = re.search(block_regex, text)
+    if outer_rule_match:
+        outer_rule_match = outer_rule_match.groupdict()
+        outer_rule_action = outer_rule_match['action'] or 'regex'
+        outer_rule_content = outer_rule_match['content']
     else:
-        outer_rule_type = 'regex'
+        print("[red]Error")
+        return Input_rule(None, text, None, False)
      
-    outer_rule = Input_rule(None, None, outer_rule_type, True)
-    for line in text.splitlines():
-        if re.search(r'^\[', line) or re.search(r'^\s*(}|{)', line):
-            continue
-        
-        rule = parse_input(line)
-        if rule:
-            outer_rule.children.append(rule)
+    outer_rule = Input_rule(None, None, outer_rule_action, True)
+
+
+    input_rule_matches = re.finditer(input_rule_regex, outer_rule_content)
+
+    for input_match in input_rule_matches:
+        dictgroups = input_match.groupdict()
+        outer_rule.children.append(parse_match(dictgroups))
 
     return outer_rule
 
-def parse_input(text):
-    for line in text.splitlines():
-        if re.search(r'^\[\[', line) or re.search(r'^\s*(}|{)', line):
-            continue
-        if re.search(r'^\[[^\[]', line):
-            
-            if not re.search('{', line):
-                outer_rule_type = re.search(type_name_pattern, line)
-                if outer_rule_type:
-                    outer_rule_type = outer_rule_type.group(1)
-                else:
-                    outer_rule_type = 'regex'
+def parse_match(rule_match:Dict[str,Union[str,Any]]):
 
-                outer_rule_name = re.search(r'\[\[(.+?)]]\s*$', line)
-                if outer_rule_name:
-                    outer_rule_name = outer_rule_name.group(1)
-                    line = re.sub(r'\[\[(.+?)]]\s*$', '', line)
+    rule_regex = rule_match['regex'].strip() if rule_match['regex'] else 'regex'
+    if rule_match['regex2']:
+        rule_regex = rule_match['regex2'].strip()
+    rule_action = rule_match['action']
+    rule_name = rule_match['name']
+    if rule_name:
+        rule_name = rule_name.strip()[2:-2].strip()
+    if rule_action:
+        rule_action = rule_action.strip()[1:-1].strip()
 
-                return Input_rule(outer_rule_name, re.sub(type_name_pattern, '', line).strip(), outer_rule_type, False)
+    if rule_match['block']:
+        return parse_inner_block(rule_match['block'].strip())
 
-            return parse_inner_block(text)
-        
-        rule_name = re.search(r'\[\[(.+?)]]\s*$', line)
-        if rule_name:
-            rule_name = rule_name.group(1)
-            line = re.sub(r'\[\[(.+?)]]\s*$', '', line)
+    rule = Input_rule(rule_name, rule_regex, rule_action, False)
 
-        destination_marker_match = re.search('->', line)
-        if destination_marker_match:
-            line = line[slice(None,destination_marker_match.span()[0])].strip()
+    if rule_match['operator']:
+        rule.operation = rule_match['operator']
 
-        if not line:
-            continue
-            
-        return Input_rule(rule_name, line, 'regex', False)
+    return rule
 
 def parse_destination(text : str) -> Destination_rule:
+    text = text.replace('->', '').strip()
     text_list = re.split(r'(?={)|(?<=})', text)
 
     destination_rule = Destination_rule(None)
@@ -84,7 +78,6 @@ def parse_destination(text : str) -> Destination_rule:
 
 def parse_whole_content(text) -> List[Block]:
     blocks : List[Block] = []
-    input_rule_regex = re.compile(r'(?P<action>\[[^\[\]]+\]\s*)?(((?P<regex>[^{\s][^\[\]\s]+\s*))?(?P<name>\[\[.+]]\s*)|(?P<regex2>((?<=])|^)\s*[^{\s\[\]][^\[\]\s]+\s*)|\[.+\]\s*\{\n(.+?\n\n*)+\s*})(?P<operator>\band\b)?$')
 
     for m in re.finditer(r'(\A|^)([\S].+?[\S])(\Z|\n$)', text, re.DOTALL | re.MULTILINE):
         block_text = m.group(2)
@@ -96,70 +89,31 @@ def parse_whole_content(text) -> List[Block]:
         input_rule_set = Rule_set(set_name, None)
         destination_rule_set = Destination_set(None)
 
+        if set_name:
+            block_text = '\n'.join(block_text.splitlines()[1:])
 
-        is_on_destination_section = False
-        cached_lines = 0
-        for i,line in enumerate(block_text.splitlines()):
+        text_split = block_text.split('->', 1)
 
-            if is_on_destination_section == False:
-                if cached_lines>0:
-                    cached_lines-=1
-                    continue
+        if len(text_split) < 2:
+            continue
 
-                if re.search(r'^\[[^\[]', line):
-                    if not re.search('{', line):
-                        rule = parse_input(line)
-                        if rule:
-                            rule.root = root_path
-                            input_rule_set.children.append(rule)
-                        continue
+        input_section_text, destination_section_text = text_split
 
-                    inner_block_lines = ''
-                    open_brackets = 0
-                    
-                    for inner_line in text.splitlines()[i+1:]:
-                        inner_block_lines += f'{inner_line}\n'
-                        open_brackets -= len(re.findall('}', inner_line))
-                        open_brackets += len(re.findall('{', inner_line))
-                        
-                        if open_brackets <= 0:
-                            break
-                        cached_lines+=1
-                    
-                    rule = parse_input(inner_block_lines)
-                    if rule:
-                        rule.root = root_path
-                        input_rule_set.children.append(rule)
-                    continue
+        input_rule_matches = re.finditer(input_rule_regex, input_section_text)
 
-                rule = parse_input(line)
-                if rule:
-                    rule.root = root_path
-                    input_rule_set.children.append(rule)
-            else:
-                destination_rule_set.children.append(parse_destination(line))
+        for input_match in input_rule_matches:
+            group_dict = input_match.groupdict()
+            # print(group_dict)
+            input_rule_set.children.append(parse_match(group_dict))
 
-            destination_marker_match = re.search('->', line)
-            if destination_marker_match:
-                is_on_destination_section = True
-                line = line[slice(destination_marker_match.span()[1],None)].strip()
-                destination_rule_set.children.append(parse_destination(line))
+        for destination_line in destination_section_text.splitlines():
+            destination_rule_set.children.append(parse_destination(destination_line))
                 
         block = Block(input_rule_set, destination_rule_set)
 
         input_rule_set.root = root_path
         blocks.append(block)
 
-        # for rule in input_rule_set.children:
-            # print(rule.children)
-            # print('-----')
-        # for rule in destination_rule_set.children:
-            # print(rule.content)
-            # print('-----')
-
-    # for block in blocks:
-        # for child in block.destination_set.children:
-            # print(child.content)
         
     return blocks
 

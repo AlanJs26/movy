@@ -12,15 +12,14 @@ r"""
 
 data = """
 [[action set]]
-/folder/*.pdf/i [[named]]
-[content] {
-/title/mi
-}
--> destinatio/{named|basename}
+in [[named]] and
+__pycache__/.*\\.py$ [[named]]
+-> destinatio/{basename|named}
+alternative/{basename}
 
 /another/*.exe/i [[testname]]
 [basename] ^alan 
--> destination/{amed|basename}
+-> destination/{basename|amed}
 """
 
 history = """
@@ -33,11 +32,25 @@ history = """
 
 # print(rule.eval())
 
-blocks = parse_whole_content(data)
+file_history = FileHistory()
 
+
+with open('history.txt','r+') as f:
+    lines = f.readlines()
+    file_history.history_array = file_history.parse(''.join(lines))
+    # for item in file_history.history_array:
+        # print(vars(item))
+
+blocks = parse_whole_content(data)
+result = blocks[0].eval(file_history)
+print(result.toString())
+
+
+exit()
 for block in blocks:
     for child in block.input_set.children:
         print(vars(child))
+    print('[blue]'+'-'*40)
     for child in block.destination_set.children:
         print(child.content)
 

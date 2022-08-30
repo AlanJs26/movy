@@ -1,57 +1,179 @@
 from parsing import *
-# import re
-# from datetime import datetime
+from time import sleep
+import yaml
+import os
 from rich import print
-# from typing import List,Callable
+from argparse import RawTextHelpFormatter, ArgumentParser
+from typing import Optional
+import shutil
 
-r"""
-(?P<regex>[^{\s]\S+)\s*(?P<name>\[\[.+]])\s*(?P<operator>\band\b)?
-(?P<action>\[[^\[\]]+\]\s*)?(((?P<regex>[^{\s][^\[\]\s]+\s*))?(?P<name>\[\[.+]]\s*)|(?P<regex2>((?<=])|^)\s*[^{\s\[\]][^\[\]\s]+\s*)|\[.+\]\s*\{\n(.+?\n)})(?P<operator>\band\b)?$
-(?P<action>\[[^\[\]]+\]\s*)?(((?P<regex>[^{\s][^\[\]\s]+\s*))?(?P<name>\[\[.+]]\s*)|(?P<regex2>((?<=])|^)\s*[^{\s\[\]][^\[\]\s]+\s*)|\[.+\]\s*\{\n(.+?\n\n*)+\s*})(?P<operator>\band\b)?$
-"""
+command_aliases = {
+    'move': 'moved',
+    'copy': 'copied'
+}
 
-data = """
-[[action set]]
-in [[named]] and
-__pycache__/.*\\.py$ [[named]]
--> destinatio/{basename|named}
-alternative/{basename}
+def dir_path(string, asfile=False):
+    if string == '': return None
+    new_string = os.path.expanduser(string)
+    if (os.path.isdir(new_string) and not asfile) or (os.path.isfile(new_string) and asfile):
+        return new_string
+    else:
+        if asfile:
+            print(f'[red]"{string}" is not a valid file')
+        else:
+            print(f'[red]"{string}" is not a valid directory')
 
-/another/*.exe/i [[testname]]
-[basename] ^alan 
--> destination/{basename|amed}
-"""
 
-history = """
-[13:27:51,2022-08-13] path/to/folder/file.txt -> new/destination/file.txt
-[13:28:44,2022-08-13] path/to/folder/second.txt -> new/destination/second.txt
-[13:28:50,2022-08-13] path/to/folder/third.txt -> new/destination/third.txt
-"""
+def string_arr(string):
+    split_string = string.split()
+    output = []
+    if string:
+        for item in split_string:
+            new_string = dir_path(item, True)
+            if new_string:
+                output.append(new_string)
+            else:
+                return []
+    if len(output) == 0:
+        print('please provide a valid path to proceed')
+    return output
 
-# rule = Input_rule(None, '.+', 'regex', False)        
+def move_pairs(files, history : Optional[FileHistory]=None, prefix=''):
+    if len(files) == 0:
+        if history:
+            print("[grey30]nothing to undo")
+        else:
+            print("[grey30]nothing to do")
+        return
 
-# print(rule.eval())
+    for item in files:
+        input_path, dest_path, operation = item
+
+        print(f'{prefix}[yellow]{command_aliases[operation]}[white] {input_path.split("/")[-1]} [yellow]to[white] {dest_path}')
+        if args.simulate:
+            continue
+        if(history):
+            history.remove(dest_path, input_path)
+        if operation == 'move':
+            shutil.move(input_path, dest_path)
+        elif operation == 'copy':
+            shutil.copy(input_path, dest_path)
+
+parser = ArgumentParser(description='Move, copy and rename files programmatically', formatter_class=RawTextHelpFormatter)
+
+parser.add_argument('script_path',     action='store', default=[],         type=string_arr, nargs='?',
+                    help='path to the script (accepts more than one script at same time)')
+parser.add_argument('-d','--daemon',   action='store_true',
+                    help='runs the program as a daemon')
+parser.add_argument('-s','--simulate',   action='store_true',
+                    help='display only. Do not move or copy files')
+parser.add_argument('-u','--undo',   action='store_true',
+                    help='undo last change')
+parser.add_argument('--interval',    action='store', default=60,    type=int,
+                    help='interval used at the daemon update (seconds)')
+parser.add_argument('-f','--force',    action='store_true',
+                    help='run all blocks in the script ignoring the configured routines')
+parser.add_argument('--history',    action='store', default='history.txt',    type=lambda x: dir_path(x,True),
+                    help='path to the history file')
+parser.add_argument('-r', '--root',    action='store', default='./',    type=dir_path,
+                    help='path used as root')
+
+args = parser.parse_args()
 
 file_history = FileHistory()
-
-
-with open('history.txt','r+') as f:
+with open(args.history,'r') as f:
     lines = f.readlines()
     file_history.history_array = file_history.parse(''.join(lines))
-    # for item in file_history.history_array:
-        # print(vars(item))
 
-blocks = parse_whole_content(data)
-result = blocks[0].eval(file_history)
-print(result.toString())
+# DONE -> run blocks as time routines 
+# DONE -> build the cli
+# DONE -> fix undo history
+# TODO -> add pdf similarity action
+# TODO -> add more actions, such as the file content matching and template matching
+# TODO -> implement block actions
+# TODO -> write README
+
+header ="""
+root: C:/Users/alanj/Downloads
+"""
+
+if args.undo:
+    move_pairs(file_history.previous_items(), history=file_history) 
+
+    with open(args.history,'w') as f:
+        f.write(file_history.toString())
+    exit()
+
+if len(args.script_path) == 0:
+    exit()
+
+scripts = []
+for current_script_path in args.script_path:
+    with open(current_script_path,'r') as f:
+        scripts.append(f.read())
+
+yaml_regex = re.compile(r'^\s*-{3,}(.+?)-{3,}', re.DOTALL)
 
 
-exit()
-for block in blocks:
-    for child in block.input_set.children:
-        print(vars(child))
-    print('[blue]'+'-'*40)
-    for child in block.destination_set.children:
-        print(child.content)
+blocks = []
+for script in scripts:
+    new_args = vars(args)
 
-    print('[red]'+'-'*60)
+    yaml_match = re.search(yaml_regex, script)
+    if yaml_match:
+        parsed_yaml = yaml.load(yaml_match.group(1), yaml.BaseLoader)
+        for arg_name in vars(args):
+            if arg_name in parsed_yaml:
+                new_args[arg_name] = parsed_yaml[arg_name]
+
+    blocks.extend(parse_whole_content(script, new_args['root']))
+routine_blocks = list(filter(lambda x: x.type == 'routine', blocks))
+non_routine_blocks = list(set(blocks).difference(routine_blocks))
+
+            
+
+def run_block(block : Block, prefix=''):
+    result = block.eval(file_history)
+    with open(args.history,'w') as f:
+        f.write(file_history.toString())
+
+    if block.input_set.name:
+        print(f"{prefix}[green]evaluating [blue]{block.input_set.name}")
+
+    move_pairs(result)
+
+    # if len(result) == 0:
+    #     print(f'{prefix}[grey30]no match found')
+    print('\n')
+
+
+
+def run_script():
+    global routine_blocks
+    global non_routine_blocks
+
+    if len(routine_blocks) and args.force == False:
+        for block in routine_blocks:
+            print(f"[green]running [blue]{block.input_set.name}")
+            blocks_to_run = block.run_routine(non_routine_blocks)
+
+            for inner_block in blocks_to_run:
+                run_block(inner_block, prefix='    ')
+            if len(blocks_to_run) == 0:
+                print('[grey30]no match found')
+    else:
+        for block in non_routine_blocks:
+            run_block(block)
+
+
+if args.daemon:
+    print(f'Running as daemon (updating after {args.interval} seconds)')
+    try:
+        while True:
+            print('\nUpdating...')
+            run_script()
+            sleep(args.interval)
+    except:
+        print('\nexiting...')
+else:
+    run_script()

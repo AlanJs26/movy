@@ -1,0 +1,25 @@
+---
+root: C:/Users/alanj/Downloads
+---
+
+[[routine 1]]
+[18h20m] action set
+[15h] block_2
+
+[[pdf]]
+[basename] ^NF.+\.pdf [[nota]]
+[basename] ^fatura.+\.pdf [[fatura]]
+.+\.pdf
+-> G:/Users/Alan/Documents/_Arquivos/PDFs/Notas/{basename|nota}
+G:/Users/Alan/Documents/_Arquivos/PDFs/Contas de luz/{basename|fatura}
+G:/Users/Alan/Documents/_Arquivos/PDFs
+
+[[executaveis]]
+.+\.(exe|msi)
+-> G:/Users/Alan/Documents/_Arquivos/Executaveis
+
+[[imagens]]
+.+\.(png|jpeg|jpg|webp) -> G:\Users\Alan\Pictures\Outros
+
+[[office]]
+.+\.xlsx -> G:\Users\Alan\Documents\_Arquivos\Office\Excel

@@ -2,17 +2,39 @@ from typing import List, Optional, Tuple,Callable, Union
 import os
 from datetime import datetime
 import re
+from click import option
 from rich import print
+from similarity import pdf_similarity
 
-def parse_action(text:str, action_type:str, pattern_string : Optional[str] = None, flags=re.MULTILINE) -> Tuple[str,bool]:
+def check_ext(text: str, extension: str) -> bool:
+    return bool(re.search('.+\\.'+extension+'$', text))
+
+def parse_action(text:str, action_type:str, pattern_string : Optional[str] = None, flags=re.MULTILINE, rule = None) -> Tuple[str,bool]:
     new_text = ''
+    text_transformers = ['regex', 'basename']
     
     if action_type == 'regex':
         new_text = text
     elif action_type == 'basename':
         new_text = re.split(r'[/\\]', text)[-1]
+    elif action_type == 'template' and check_ext(text, 'pdf'):
+        if rule:
+            options = {
+                'path': '',
+                'threshold': 70
+            }
+            children_dict = rule.get_children_as_dict()
+            for key, child_dict in children_dict.items():
+                if key in options:
+                    options[key] = child_dict['content']
+            
+            if check_ext(options['path'], 'pdf'):
+                score = pdf_similarity(options['path'], text)
+                print([text, score*100, score*100 > options['threshold']])
 
-    if pattern_string is not None:
+                return '', score*100 > options['threshold']
+
+    if pattern_string is not None and action_type in text_transformers:
         return '', bool(re.search(pattern_string, new_text, flags = flags)) 
 
     if new_text:
@@ -117,8 +139,6 @@ class FileHistory:
 
         return output[:-1] 
 
-
-
 class Block:
     def __init__(self, input_set, destination_set):
         self.input_set : Rule_set = input_set
@@ -157,7 +177,7 @@ class Block:
             now = datetime.now()
             current_time = f'{now.hour}h{now.minute}m'
 
-            if (rule.action_content and current_time == rule.action_content.strip()) or rule.action_content == None: 
+            if (type(rule.action_content) == str and current_time == rule.action_content.strip()) or rule.action_content == None: 
                 blocks_pending.append(current_block)
 
         return blocks_pending
@@ -223,6 +243,11 @@ class Input_rule:
             minute = time_split[1].replace('m','')or'0'
             self.action_content = f'{int(hour)}h{int(minute)}m'
             self.action_type = 'time'
+        elif '|' in self.action_type:
+            action_split = self.action_type.strip().split('|')
+
+            self.action_type = action_split[0]
+            self.action_content = action_split[1:]
 
     
     def eval(self, root:Union[str, None]=None):
@@ -248,11 +273,23 @@ class Input_rule:
         results = []
 
         for file in os.listdir(root):
-            _, parse_status = parse_action(root+'/'+file, self.action_type, pattern_string, flags = pattern_flags)
+            _, parse_status = parse_action(root+'/'+file, self.action_type, pattern_string, flags = pattern_flags, rule=self)
             if parse_status:
                 results.append(( root+'/'+file, self.name))
 
         return results
+    
+    def get_children_as_dict(self) -> dict:
+        children_dict = {}
+
+        for i, child in enumerate(self.children):
+            children_dict[child.action_type] = {
+                'content': child.content,
+                'action_content': child.action_content,
+                'index': i
+            }
+
+        return children_dict
     
 class Rule_set:
     def __init__(self, name : str, children : Union[List[Input_rule],None]) -> None:

@@ -5,7 +5,7 @@ from rich import print
 
 type_name_pattern = re.compile(r'^\s*\[(.+?)]')
 block_regex = re.compile(r'\[(?P<action>.+)\].+{\s*\n(?P<content>(.+\n\n*)+)\s*}')
-input_rule_regex = re.compile(r'(?P<action>\[[^\[\]]+\]\s*)?(((?P<regex>[^{\s][^\[\]\n]+?\s*))?(?P<name>\[\[.+]]\s*)|(?P<regex2>((?<=[^\]]])|^)\s*[^{\s\[\]][^\[\]\n]+?\s*)|(?P<block>\[.+\]\s*\{\n(.+?\n\n*)+\s*}))(?P<operator>\b(and|or)\b)?$', flags=re.MULTILINE)
+input_rule_regex = re.compile(r'(?P<action>\[[^\[\]]+\]\s*)?(((?P<regex>[^{\s][^\[\]\n]+?\s*))?(?P<name>\[\[.+]]\s*)|(?P<regex2>((?<=[^\]]])|^)\s*[^{\s\[\]][^\[\]\n]+?\s*[^{])|(?P<block>\[.+?\]\s*([^\s]*)\s*\{\n((.+?\n\n*)+)\s*}))(?P<operator>\b(and|or)\b)?$', flags=re.MULTILINE)
 
 def parse_inner_block(text):
 

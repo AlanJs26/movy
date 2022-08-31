@@ -1,5 +1,5 @@
 ---
-root: C:/Users/alanj/Downloads
+root: C:/Users/alanj/Downloads/diff-pdf-win-0.5
 ---
 
 [[routine 1]]
@@ -7,12 +7,10 @@ root: C:/Users/alanj/Downloads
 [15h] block_2
 
 [[pdf]]
-[basename] ^NF.+\.pdf [[nota]]
-[basename] ^fatura.+\.pdf [[fatura]]
-.+\.pdf
--> G:/Users/Alan/Documents/_Arquivos/PDFs/Notas/{basename|nota}
-G:/Users/Alan/Documents/_Arquivos/PDFs/Contas de luz/{basename|fatura}
-G:/Users/Alan/Documents/_Arquivos/PDFs
+[template] {
+[path] C:/Users/alanj/Downloads/diff-pdf-win-0.5/fatura1.pdf
+}
+-> G:/Users/Alan/Documents/_Arquivos/PDFs
 
 [[executaveis]]
 .+\.(exe|msi)

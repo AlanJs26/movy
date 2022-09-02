@@ -34,8 +34,8 @@ def convert_pdf2img(input_file: str, output_name: str):
 
 
 def pdf_similarity(first_pdf:str, second_pdf:str):
-    convert_pdf2img(first_pdf, 'first.png')
-    convert_pdf2img(second_pdf, 'second.png')
+    first_content = convert_pdf2img(first_pdf, 'first.png')
+    secont_content = convert_pdf2img(second_pdf, 'second.png')
 
     first = cv2.imread('converted/first.png')
     second = cv2.imread('converted/second.png')

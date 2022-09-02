@@ -4,8 +4,8 @@ from classes import *
 from rich import print
 
 type_name_pattern = re.compile(r'^\s*\[(.+?)]')
-block_regex = re.compile(r'\[(?P<action>.+)\].+{\s*\n(?P<content>(.+\n\n*)+)\s*}')
-input_rule_regex = re.compile(r'(?P<action>\[[^\[\]]+\]\s*)?(((?P<regex>[^{\s][^\[\]\n]+?\s*))?(?P<name>\[\[.+]]\s*)|(?P<regex2>((?<=[^\]]])|^)\s*[^{\s\[\]][^\[\]\n]+?\s*[^{])|(?P<block>\[.+?\]\s*([^\s]*)\s*\{\n((.+?\n\n*)+)\s*}))(?P<operator>\b(and|or)\b)?$', flags=re.MULTILINE)
+block_regex = re.compile(r'\[(?P<action>.+)\]\s*(?P<regex>.+?)\s*{\s*\n(?P<block>(.+\n\n*)+)\s*}')
+input_rule_regex = re.compile(r'(?P<action>\[[^\[\]]+\]\s*)?(((?P<regex>[^{\s][^\[\]\n]+?\s*))?(?P<name>\[\[.+]]\s*)|(?P<regex2>((?<=[^\]]])|^)\s*[^{\s\[\]][^\[\]\n]+?\s*[^{])|(?P<block>\[.+?\]\s*(?P<regex3>[^\s]*)\s*\{\n((.+?\n\n*)+)\s*} *))(?P<operator>\b(and|or)\b)?$', flags=re.MULTILINE)
 
 def parse_inner_block(text):
 
@@ -13,15 +13,15 @@ def parse_inner_block(text):
     if outer_rule_match:
         outer_rule_match = outer_rule_match.groupdict()
         outer_rule_action = outer_rule_match['action'] or 'regex'
-        outer_rule_content = outer_rule_match['content']
+        outer_rule_block = outer_rule_match['block']
+        outer_rule_content = outer_rule_match['regex']
     else:
         print("[red]Error")
         return Input_rule(None, text, None, False)
      
-    outer_rule = Input_rule(None, None, outer_rule_action, True)
+    outer_rule = Input_rule(None, outer_rule_content, outer_rule_action, True)
 
-
-    input_rule_matches = re.finditer(input_rule_regex, outer_rule_content)
+    input_rule_matches = re.finditer(input_rule_regex, outer_rule_block)
 
     for input_match in input_rule_matches:
         dictgroups = input_match.groupdict()
@@ -32,8 +32,11 @@ def parse_inner_block(text):
 def parse_match(rule_match:Dict[str,Union[str,Any]]):
 
     rule_regex = rule_match['regex'].strip() if rule_match['regex'] else 'regex'
-    if rule_match['regex2']:
+    if rule_match['regex2'] is not None:
         rule_regex = rule_match['regex2'].strip()
+    elif rule_match['regex3'] is not None:
+        rule_regex = rule_match['regex3'].strip()
+
     rule_action = rule_match['action']
     rule_name = rule_match['name']
     if rule_name:
@@ -85,6 +88,9 @@ def parse_destination(text : str) -> Union[Destination_rule,None]:
 
 def parse_whole_content(text, root_path : Optional[str] = './') -> List[Block]:
     blocks : List[Block] = []
+
+    # remove comments
+    text = re.sub(r'^ *\#.*\n', '', text, 0, re.MULTILINE)
 
     count = 1
     for m in re.finditer(r'(\A|^)([\S].+?[\S])(\Z|\n$)', text, re.DOTALL | re.MULTILINE):

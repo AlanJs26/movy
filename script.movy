@@ -1,0 +1,37 @@
+---
+root: C:/Users/alanj/Downloads/diff-pdf-win-0.5
+---
+
+[[routine 1]]
+[18h20m] action set
+[15h] block_2
+
+[[pdf]]
+[template] fatura {
+   [path] C:/Users/alanj/Downloads/diff-pdf-win-0.5/fatura1.pdf
+   [threshold] 70
+}
+#[template|C:/Users/alanj/Downloads/diff-pdf-win-0.5/fatura1.pdf] fatura
+# [filecontent] /poda/i
+-> G:/Users/Alan/Documents/_Arquivos/PDFs
+
+# [[action set]]
+# mo or
+# __pycache__/.*\\.py$ [[named]]
+# -> [move] destinatio/{basename|named}
+# [copy]alternative/{basename}
+
+
+#[[pdf]]
+#[template|C:/Users/alanj/Downloads/diff-pdf-win-0.5/fatura1.pdf] fatura
+#-> G:/Users/Alan/Documents/_Arquivos/PDFs
+
+[[executaveis]]
+[extension] exe|msi
+-> G:/Users/Alan/Documents/_Arquivos/Executaveis
+
+# [[imagens]]
+# [extension|asdfdf] png|jpeg|jpg|webp -> G:\Users\Alan\Pictures\Outros
+
+# [[office]]
+# [extension] xlsx|csv -> G:\Users\Alan\Documents\_Arquivos\Office\Excel

@@ -2,39 +2,53 @@ from typing import List, Optional, Tuple,Callable, Union
 import os
 from datetime import datetime
 import re
-from click import option
 from rich import print
-from similarity import pdf_similarity
-
-def check_ext(text: str, extension: str) -> bool:
-    return bool(re.search('.+\\.'+extension+'$', text))
+from utils import check_ext, get_file_content
 
 def parse_action(text:str, action_type:str, pattern_string : Optional[str] = None, flags=re.MULTILINE, rule = None) -> Tuple[str,bool]:
     new_text = ''
-    text_transformers = ['regex', 'basename']
+    non_text_transformers = ['template']
+
+    def get_rule_options(options:dict, rule):
+
+        if type(rule.action_content) == list:
+            for opt_key, action_arg in zip(options.keys(), rule.action_content):
+                options[opt_key] = action_arg
+
+        children_dict = rule.get_children_as_dict()
+        for key, child_dict in children_dict.items():
+            if key in options:
+                options[key] = child_dict['content']
+        
+        return options
     
     if action_type == 'regex':
         new_text = text
+    elif action_type == 'extension':
+        new_text = os.path.splitext(text)[1]
+    elif action_type == 'filecontent':
+        new_text = get_file_content(text)
     elif action_type == 'basename':
-        new_text = re.split(r'[/\\]', text)[-1]
+        new_text = os.path.splitext(os.path.basename(text))[0]
     elif action_type == 'template' and check_ext(text, 'pdf'):
-        if rule:
+        pattern_string = pattern_string.strip() if pattern_string else None
+        if rule and (not pattern_string or re.search(pattern_string, text, flags=flags)):
+            from similarity import pdf_similarity
+
             options = {
                 'path': '',
                 'threshold': 70
             }
-            children_dict = rule.get_children_as_dict()
-            for key, child_dict in children_dict.items():
-                if key in options:
-                    options[key] = child_dict['content']
+
+            options = get_rule_options(options, rule)
             
             if check_ext(options['path'], 'pdf'):
                 score = pdf_similarity(options['path'], text)
-                print([text, score*100, score*100 > options['threshold']])
+                # print([text, score*100, score*100 > options['threshold'], pattern_string])
 
-                return '', score*100 > options['threshold']
+                return '', score*100 > int(options['threshold'])
 
-    if pattern_string is not None and action_type in text_transformers:
+    if pattern_string is not None and action_type not in non_text_transformers:
         return '', bool(re.search(pattern_string, new_text, flags = flags)) 
 
     if new_text:

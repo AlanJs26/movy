@@ -88,14 +88,15 @@ with open(args.history,'r') as f:
 # DONE -> run blocks as time routines 
 # DONE -> build the cli
 # DONE -> fix undo history
-# TODO -> add pdf similarity action
-# TODO -> add more actions, such as the file content matching and template matching
-# TODO -> implement block actions
+# DONE -> implement block filters
+# DONE -> add pdf similarity filter
+# DONE -> add comments
+# DONE -> add vscode,sublime text, vim,... syntax highlighing
+# DONE -> add file content filter
+# TODO -> add "run external command" action
+# TODO -> add a more robust destination string placeholders
+# TODO -> add aliases
 # TODO -> write README
-
-header ="""
-root: C:/Users/alanj/Downloads
-"""
 
 if args.undo:
     move_pairs(file_history.previous_items(), history=file_history) 

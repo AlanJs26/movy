@@ -111,3 +111,9 @@
 [2022-08-30 16:21:54.352645] C:/Users/alanj/Downloads/diff-pdf-win-0.5/fatura1.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs/Contas
 [2022-08-30 16:22:41.545685] C:/Users/alanj/Downloads/diff-pdf-win-0.5/fatura2.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
 [2022-08-30 16:22:41.545685] C:/Users/alanj/Downloads/diff-pdf-win-0.5/fatura1.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-08-31 20:22:45.983941] C:/Users/alanj/Downloads/diff-pdf-win-0.5/NF1.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-08-31 20:22:45.983941] C:/Users/alanj/Downloads/diff-pdf-win-0.5/NF2.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-09-02 11:26:34.543175] C:/Users/alanj/Downloads/YouTube-Music-Setup-1.16.0.exe -> G:/Users/Alan/Documents/_Arquivos/Executaveis
+[2022-09-02 11:26:34.543175] C:/Users/alanj/Downloads/YouTube-Music-Setup-1.17.0.exe -> G:/Users/Alan/Documents/_Arquivos/Executaveis
+[2022-09-02 11:26:34.671186] C:/Users/alanj/Downloads/grafico.png -> G:\Users\Alan\Pictures\Outros
+[2022-09-02 11:27:24.121052] C:/Users/alanj/Downloads/grafico.csv -> G:\Users\Alan\Documents\_Arquivos\Office\Excel

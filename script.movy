@@ -6,14 +6,15 @@ root: C:/Users/alanj/Downloads/diff-pdf-win-0.5
 [18h20m] action set
 [15h] block_2
 
-[[pdf]]
-[template] fatura {
-   [path] C:/Users/alanj/Downloads/diff-pdf-win-0.5/fatura1.pdf
-   [threshold] 70
-}
-#[template|C:/Users/alanj/Downloads/diff-pdf-win-0.5/fatura1.pdf] fatura
-# [filecontent] /poda/i
--> G:/Users/Alan/Documents/_Arquivos/PDFs
+# [[pdf]]
+# [template] fatura {
+#    [path] C:/Users/alanj/Downloads/diff-pdf-win-0.5/fatura1.pdf
+#    [threshold] 70
+# }
+# # [filecontent] cosme
+# #[template|C:/Users/alanj/Downloads/diff-pdf-win-0.5/fatura1.pdf] fatura
+# # [filecontent] /poda/i
+# -> G:/Users/Alan/Documents/_Arquivos/PDFs
 
 # [[action set]]
 # mo or
@@ -22,13 +23,15 @@ root: C:/Users/alanj/Downloads/diff-pdf-win-0.5
 # [copy]alternative/{basename}
 
 
-#[[pdf]]
-#[template|C:/Users/alanj/Downloads/diff-pdf-win-0.5/fatura1.pdf] fatura
-#-> G:/Users/Alan/Documents/_Arquivos/PDFs
+# [[pdf]]
+# [template|C:/Users/alanj/Downloads/diff-pdf-win-0.5/fatura1.pdf] fatura
+# -> G:/Users/Alan/Documents/_Arquivos/PDFs
 
 [[executaveis]]
-[extension] exe|msi
--> G:/Users/Alan/Documents/_Arquivos/Executaveis
+[extension] (exe|msi) [[name]] and
+[basename] d(iff)
+-> G:/Users/Alan/Documents/_Arquivos/Executaveis/{basename.groups.1}/{extension.groups.1|name}
+G:/Users/Alan/Documents/_Arquivos/Executaveis/dll
 
 # [[imagens]]
 # [extension|asdfdf] png|jpeg|jpg|webp -> G:\Users\Alan\Pictures\Outros

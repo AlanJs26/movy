@@ -3,11 +3,12 @@ import os
 from datetime import datetime
 import re
 from rich import print
-from utils import check_ext, get_file_content
+from utils import check_ext, get_file_content, mergedicts
 
 def parse_action(text:str, action_type:str, pattern_string : Optional[str] = None, flags=re.MULTILINE, rule = None) -> Tuple[str,bool]:
     new_text = ''
     non_text_transformers = ['template']
+    action_results = {}
 
     def get_rule_options(options:dict, rule):
 
@@ -46,15 +47,30 @@ def parse_action(text:str, action_type:str, pattern_string : Optional[str] = Non
                 score = pdf_similarity(options['path'], text)
                 # print([text, score*100, score*100 > options['threshold'], pattern_string])
 
-                return '', score*100 > int(options['threshold'])
+                return '', score*100 > int(options['threshold']), action_results
 
     if pattern_string is not None and action_type not in non_text_transformers:
-        return '', bool(re.search(pattern_string, new_text, flags = flags)) 
+        text_match = re.search(pattern_string, new_text, flags = flags)
+        if text_match:
+            matchdict = text_match.groupdict()
+            matchgroups = text_match.groups()
+            
+            if (len(matchdict) or len(matchgroups)) and not hasattr(action_results, action_type):
+                action_results[action_type] = {'groups': {}}
+
+            if len(matchdict):
+                action_results[action_type]['groups'] = { **action_results[action_type]['groups'], **text_match.groupdict() }
+            if len(matchgroups):
+                action_results[action_type]['groups'] = { **action_results[action_type]['groups'], **dict(zip(range(1,len(matchgroups)+1), matchgroups)) }
+
+            if len(action_results):
+                print(action_results)
+        return '', bool(text_match), action_results
 
     if new_text:
-        return new_text, True
+        return new_text, True, action_results
 
-    return text, False
+    return text, False, action_results
 
 
 class HistoryItem:
@@ -202,42 +218,52 @@ class Destination_set:
 
     def eval_children(self, input_rule_results: List[Tuple[str,Union[None,str]]]):
         results = []
+        # input_rule_results : list[Destination_rule]
 
 
         for input_match in input_rule_results:
             command_name = 'move'
-            output = ""
+
             for child in self.children:
                 command_name = child.command
-                found_error = False
 
-                has_tuple = any(map(lambda x : isinstance(x,tuple), child.content))
-                if not has_tuple:
-                    output = ''.join(child.content)
-                    break
+                # input match
+                # path, name, action_action_options
 
+                # destination_item
+                # List[str,Tuple[action:str,name:str]]
 
                 inner_output = ""
                 for destination_item in child.content:
-                    if found_error:
-                        break
                     if isinstance(destination_item, str):
                         inner_output += destination_item
                     elif destination_item[1] is None or destination_item[1] == input_match[1]: # group name
-                        parsed_action_text, parse_status = parse_action(input_match[0], destination_item[0])
-                        inner_output += parsed_action_text
-                        if parse_status == False:
-                            found_error = True
+                        dest_action,dest_name = destination_item
+                        if '.' in dest_action:
+                            dest_action_split = dest_action.split('.')
+                            if len(dest_action_split) <= 1:
+                                break
+                            if dest_action_split[1] == 'groups':
+                                try:
+                                    if dest_action_split[2].isnumeric():
+                                        inner_output += input_match[2][dest_action_split[0]]['groups'][int(dest_action_split[2])]
+                                    else:
+                                        inner_output += input_match[2][dest_action_split[0]]['groups'][dest_action_split[2]]
+                                except:
+                                    break
+                        else:
+                            parsed_action_text, parse_status, _ = parse_action(input_match[0], destination_item[0])
+                            inner_output += parsed_action_text
+                            if parse_status == False:
+                                break
                     else:
-                        found_error = True
-
-                if not found_error:
-                    output = inner_output
+                        break
+                else:
+                    results.append((input_match[0], inner_output, command_name))
                     break
-
-            if output:
-                results.append((input_match[0], output, command_name))
         return results
+
+
 
 class Input_rule:
     def __init__(self, name : Union[str, None], content : Union[str, None], action_type : Union[str, None], nested : bool):
@@ -287,9 +313,10 @@ class Input_rule:
         results = []
 
         for file in os.listdir(root):
-            _, parse_status = parse_action(root+'/'+file, self.action_type, pattern_string, flags = pattern_flags, rule=self)
+            _, parse_status, action_results = parse_action(root+'/'+file, self.action_type, pattern_string, flags = pattern_flags, rule=self)
             if parse_status:
-                results.append(( root+'/'+file, self.name))
+
+                results.append(( root+'/'+file, self.name, action_results))
 
         return results
     
@@ -312,30 +339,49 @@ class Rule_set:
         self.root : None|str = None
 
     def eval_children(self):
-        results = set()
+        final_results = []
         previous_operation = 'or'
 
         for child in self.children:
-            current_result = child.eval(self.root)
+            current_results = child.eval(self.root)
 
-            for output_item in list(results):
-                for i,result_item in enumerate(current_result):
-                    if output_item[0] == result_item[0]:
-                        if output_item[1]:
-                            current_result[i] = output_item
-                        else:
-                            results.remove(output_item)
-                            results.add(result_item)
+            final_path_list = [x[0] for x in final_results]
+            current_path_list = [x[0] for x in current_results]
+            final_results_len = len(final_path_list)
 
             if previous_operation == 'or':
-                results = results.union(current_result)
+                # same_items = [x for x in current_results if x[0] in final_path_list]
+                final_results.extend(x for x in current_results if x[0] not in final_path_list)
+                for result_item in current_results:
+                    path, name, action_options = result_item
+
+                    for i in range(final_results_len):
+                        final_path, final_name, final_action_options = final_results[i]
+
+                        if final_path == path and (name is not None or final_name is None):
+                            final_results[i] = (path, name, dict(mergedicts(final_action_options, action_options)))
+                        else:
+                            final_results[i] = (final_path, final_name, dict(mergedicts(final_action_options, action_options)))
+
             elif previous_operation == 'and':
-                results = results.intersection(current_result)
+                final_results = [x for x in final_results if x[0] in current_path_list]
+
+                for i,final_item in enumerate(final_results):
+                    final_path, final_name, final_action_options = final_item
+
+                    for result_item in current_results:
+                        path, name, action_options = result_item
+
+                        if path == final_path and (name is not None or final_name is None):
+                            final_results[i] = (path, name, dict(mergedicts(final_action_options, action_options)))
+                        else:
+                            final_results[i] = (final_path, final_name, dict(mergedicts(final_action_options, action_options)))
 
             previous_operation = child.operation
-        # print(list(results))
 
-        return list(results)
+        print(final_results)
+
+        return list(final_results)
 
 
 class Destination_rule:

@@ -93,8 +93,11 @@ with open(args.history,'r') as f:
 # DONE -> add comments
 # DONE -> add vscode,sublime text, vim,... syntax highlighing
 # DONE -> add file content filter
+# TODO -> match folders
 # TODO -> add "run external command" action
 # TODO -> add a more robust destination string placeholders
+#     DONE -> regex groups
+#     TODO -> filter specific string format
 # TODO -> add aliases
 # TODO -> write README
 

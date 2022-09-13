@@ -1,5 +1,6 @@
 from skimage.metrics import structural_similarity
 import cv2
+from utils import check_ext
 # import numpy as np
 
 import fitz
@@ -34,11 +35,19 @@ def convert_pdf2img(input_file: str, output_name: str):
 
 
 def pdf_similarity(first_pdf:str, second_pdf:str):
-    first_content = convert_pdf2img(first_pdf, 'first.png')
-    secont_content = convert_pdf2img(second_pdf, 'second.png')
+    if check_ext(first_pdf, 'pdf'):
+        convert_pdf2img(first_pdf, 'first.png')
 
-    first = cv2.imread('converted/first.png')
-    second = cv2.imread('converted/second.png')
+        first = cv2.imread('converted/first.png')
+    else:
+        first = cv2.imread(first_pdf)
+
+    if check_ext(second_pdf, 'pdf'):
+        convert_pdf2img(second_pdf, 'second.png')
+
+        second = cv2.imread('converted/second.png')
+    else:
+        second = cv2.imread(second_pdf)
 
     # shape to the same size
     second = cv2.resize(second, (first.shape[1], first.shape[0]), interpolation = cv2.INTER_AREA)

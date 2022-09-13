@@ -4,8 +4,9 @@ from classes import *
 from rich import print
 
 type_name_pattern = re.compile(r'^\s*\[(.+?)]')
-block_regex = re.compile(r'\[(?P<action>.+)\]\s*(?P<regex>.+?)\s*{\s*\n(?P<block>(.+\n\n*)+)\s*}')
-input_rule_regex = re.compile(r'(?P<action>\[[^\[\]]+\]\s*)?(((?P<regex>[^{\s][^\[\]\n]+?\s*))?(?P<name>\[\[.+]]\s*)|(?P<regex2>((?<=[^\]]])|^)\s*[^{\s\[\]][^\[\]\n]+?\s*[^{])|(?P<block>\[.+?\]\s*(?P<regex3>[^\s]*)\s*\{\n((.+?\n\n*)+)\s*} *))(?P<operator>\b(and|or)\b)?$', flags=re.MULTILINE)
+block_regex = re.compile(r'\[(?P<action>.+?)\]\s*(?P<regex> *[^{\s\[\]][^\n]+?)?\s*{\s*\n(?P<block>(.+\n\n*)+)\s*}')
+# input_rule_regex = re.compile(r'(?P<action>\[[^\[\]]+\]\s*)?(((?P<regex>[^{\s][^\[\]\n]+?\s*))?(?P<name>\[\[.+]]\s*)|(?P<regex2>((?<=[^\]]])|^)\s*[^{\s\[\]][^\[\]\n]+?\s*[^{])|(?P<block>\[.+?\]\s*(?P<regex3>[^\s]*)\s*\{\n((.+?\n\n*)+)\s*} *))(?P<operator>\b(and|or)\b)?$', flags=re.MULTILINE)
+input_rule_regex = re.compile(r'(?P<action>\[[^\[\]]+\] *)?(((?P<regex>[^{\s\[\]][^\n]+? *))?(?P<name>\[\[.+]] *)|(?P<regex2>((?<=[^\]])|^)\s*[^{\s\[\]][^\n]+?[^{])|(?P<block>\[.+?\] *(?P<regex3> *[^{\s\[\]][^\n]+?)? *\{\n((.+?\n\n*)+?) *} *(?P<name2>\[\[.+]])? *))(?P<operator>\band|or\b)?$', flags=re.MULTILINE)
 
 def parse_inner_block(text):
 
@@ -19,6 +20,7 @@ def parse_inner_block(text):
         print("[red]Error")
         return Input_rule(None, text, None, False)
      
+    # print(outer_rule_content)
     outer_rule = Input_rule(None, outer_rule_content, outer_rule_action, True)
 
     input_rule_matches = re.finditer(input_rule_regex, outer_rule_block)
@@ -37,19 +39,25 @@ def parse_match(rule_match:Dict[str,Union[str,Any]]):
     elif rule_match['regex3'] is not None:
         rule_regex = rule_match['regex3'].strip()
 
-    rule_action = rule_match['action']
     rule_name = rule_match['name']
-    if rule_name:
+    if rule_match['name2'] is not None:
+        rule_name = rule_match['name2'].strip()[2:-2].strip()
+    elif rule_name:
         rule_name = rule_name.strip()[2:-2].strip()
+
+    rule_action = rule_match['action']
     if rule_action:
         rule_action = rule_action.strip()[1:-1].strip()
 
     if rule_match['block']:
-        return parse_inner_block(rule_match['block'].strip())
-
-    rule = Input_rule(rule_name, rule_regex, rule_action, False)
+        rule =  parse_inner_block(rule_match['block'].strip())
+        if rule_name:
+            rule.name = rule_name
+    else:
+        rule = Input_rule(rule_name, rule_regex, rule_action, False)
 
     if rule_match['operator']:
+        # print(rule_match['operator'])
         rule.operation = rule_match['operator']
 
     return rule
@@ -92,6 +100,9 @@ def parse_whole_content(text, root_path : Optional[str] = './') -> List[Block]:
     # remove comments
     text = re.sub(r'^ *\#.*\n', '', text, 0, re.MULTILINE)
 
+    # remove trailing spaces
+    text = re.sub(r'( |\t)+$', '', text, 0, re.MULTILINE)
+
     count = 1
     for m in re.finditer(r'(\A|^)([\S].+?[\S])(\Z|\n$)', text, re.DOTALL | re.MULTILINE):
         block_text = m.group(2)
@@ -101,6 +112,8 @@ def parse_whole_content(text, root_path : Optional[str] = './') -> List[Block]:
             set_name = set_name.group(1)
         else:
             set_name = ''
+
+        # print(set_name)
 
 
         input_rule_set = Rule_set(set_name or f'block_{count}', None)

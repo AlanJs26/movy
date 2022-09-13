@@ -1,3 +1,4 @@
+from genericpath import isdir, isfile
 from parsing import *
 from time import sleep
 import yaml
@@ -9,19 +10,25 @@ import shutil
 
 command_aliases = {
     'move': 'moved',
-    'copy': 'copied'
+    'copy': 'copied',
 }
 
 def dir_path(string, asfile=False):
-    if string == '': return None
+    if string == '': return
     new_string = os.path.expanduser(string)
-    if (os.path.isdir(new_string) and not asfile) or (os.path.isfile(new_string) and asfile):
-        return new_string
-    else:
-        if asfile:
-            print(f'[red]"{string}" is not a valid file')
-        else:
+    if asfile:
+        if not os.path.isfile(new_string):
+            try:
+                os.makedirs(os.path.dirname(new_string), exist_ok=True)
+                open(new_string, 'a').close()
+            except:
+                print(f'[red]"{string}" is not a valid file')
+                return
+    elif not os.path.isdir(new_string):
             print(f'[red]"{string}" is not a valid directory')
+            return
+
+    return new_string
 
 
 def string_arr(string):
@@ -49,15 +56,36 @@ def move_pairs(files, history : Optional[FileHistory]=None, prefix=''):
     for item in files:
         input_path, dest_path, operation = item
 
-        print(f'{prefix}[yellow]{command_aliases[operation]}[white] {input_path.split("/")[-1]} [yellow]to[white] {dest_path}')
+        if os.path.isfile(dest_path) and args.overwrite == False:
+            print(f'{prefix}[blue]skiping duplicate... [yellow]{command_aliases[operation]}[white] {input_path.split("/")[-1]} [yellow]to[white] {dest_path}')
+        else:
+            print(f'{prefix}[yellow]{command_aliases[operation]}[white] {input_path.split("/")[-1]} [yellow]to[white] {dest_path}')
+
         if args.simulate:
             continue
         if(history):
             history.remove(dest_path, input_path)
+
+        if '.' in os.path.basename(dest_path):
+            os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+        else:
+            os.makedirs(dest_path, exist_ok=True)
+
+        if args.overwrite:
+            dest_path = os.path.join(dest_path, os.path.basename(input_path))
+
         if operation == 'move':
-            shutil.move(input_path, dest_path)
+            try:
+                shutil.move(input_path, dest_path)
+            except:
+                if args.overwrite == False:
+                    print(f'{prefix}[red]error moving file')
         elif operation == 'copy':
-            shutil.copy(input_path, dest_path)
+            try:
+                shutil.copy(input_path, dest_path)
+            except:
+                if args.overwrite == False:
+                    print(f'{prefix}[red]error copying file')
 
 parser = ArgumentParser(description='Move, copy and rename files programmatically', formatter_class=RawTextHelpFormatter)
 
@@ -73,7 +101,9 @@ parser.add_argument('--interval',    action='store', default=60,    type=int,
                     help='interval used at the daemon update (seconds)')
 parser.add_argument('-f','--force',    action='store_true',
                     help='run all blocks in the script ignoring the configured routines')
-parser.add_argument('--history',    action='store', default='history.txt',    type=lambda x: dir_path(x,True),
+parser.add_argument('-w','--overwrite',    action='store_true',
+                    help='overwrite files on duplicates. The default behaviour is skip duplicates.')
+parser.add_argument('--history',    action='store', default=os.path.join(os.path.expanduser('~'), '.movy/history.txt'),    type=lambda x: dir_path(x,True),
                     help='path to the history file')
 parser.add_argument('-r', '--root',    action='store', default='./',    type=dir_path,
                     help='path used as root')
@@ -93,11 +123,15 @@ with open(args.history,'r') as f:
 # DONE -> add comments
 # DONE -> add vscode,sublime text, vim,... syntax highlighing
 # DONE -> add file content filter
+# DONE -> add a more robust destination string placeholders
+#     DONE -> regex groups
+#     DONE -> filter specific string format
+# TODO -> add windows support
+#     TODO -> launch script by a executable file (in the same way as autohot key
+#             create a separate program that converts a movy script into an executable)
+#     TODO -> system tray
 # TODO -> match folders
 # TODO -> add "run external command" action
-# TODO -> add a more robust destination string placeholders
-#     DONE -> regex groups
-#     TODO -> filter specific string format
 # TODO -> add aliases
 # TODO -> write README
 
@@ -138,16 +172,14 @@ non_routine_blocks = list(set(blocks).difference(routine_blocks))
 
 def run_block(block : Block, prefix=''):
     result = block.eval(file_history)
-    with open(args.history,'w') as f:
-        f.write(file_history.toString())
+    with open(args.history,'w', encoding='utf-8') as f:
+        f.write(file_history.toString().encode('cp850', 'replace').decode('cp850'))
 
     if block.input_set.name:
         print(f"{prefix}[green]evaluating [blue]{block.input_set.name}")
 
     move_pairs(result)
 
-    # if len(result) == 0:
-    #     print(f'{prefix}[grey30]no match found')
     print('\n')
 
 

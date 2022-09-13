@@ -3,7 +3,7 @@ import re
 def check_ext(text: str, extension: str) -> bool:
     return bool(re.search('.+\\.'+extension+'$', text))
 
-def get_file_content(file:str):
+def get_file_content(file:str, max_lines=10, max_line_length=200):
     if check_ext(file, 'pdf'):
         import fitz
 
@@ -22,7 +22,12 @@ def get_file_content(file:str):
 
     try:
         with open(file,'r') as f:
-            return f.read()
+            lines = ''
+            current_line = 0
+            while current_line < max_lines:
+                current_line+=1
+                lines += f.readline(max_line_length)
+            return lines
     except:
         return ""
 

@@ -2,43 +2,64 @@ from typing import List, Optional, Tuple,Callable, Union
 import os
 from datetime import datetime
 import re
-from rich import print
+from rich import print as rprint
+# from rich import print
 from utils import check_ext, get_file_content, mergedicts
 
 def parse_action(text:str, action_type:str, pattern_string : Optional[str] = None, flags=re.MULTILINE, rule = None) -> Tuple[str,bool]:
     new_text = ''
     non_text_transformers = ['template']
+    not_string_valid = ['filecontent']
     action_results = {}
+    options = {}
 
     def get_rule_options(options:dict, rule):
 
         if type(rule.action_content) == list:
             for opt_key, action_arg in zip(options.keys(), rule.action_content):
-                options[opt_key] = action_arg
+                if type(action_arg) == str and action_arg.isnumeric():
+                    options[opt_key] = int(action_arg)
+                else:
+                    options[opt_key] = action_arg
 
         children_dict = rule.get_children_as_dict()
         for key, child_dict in children_dict.items():
             if key in options:
-                options[key] = child_dict['content']
+                if type(child_dict['content']) == str and child_dict['content'].isnumeric():
+                    options[key] = int(child_dict['content'])
+                else:
+                    options[key] = child_dict['content']
         
         return options
     
     if action_type == 'regex':
         new_text = text
     elif action_type == 'extension':
-        new_text = os.path.splitext(text)[1]
+        new_text = os.path.splitext(text)[1].replace('.', '')
     elif action_type == 'filecontent':
-        new_text = get_file_content(text)
+        valid_extensions = ['pdf', 'txt', 'csv', 'c', 'cpp', 'dat', 'log', 'xml', 'js', 'jsx', 'py', 'html', 'sh']
+        if os.path.splitext(text)[1].replace('.', '') in valid_extensions:
+            options = {
+                'maxlines': 10,
+                'linelength': 200,
+                'verbose': 'false'
+            }
+
+            options = get_rule_options(options, rule)
+
+            new_text = get_file_content(text, options['maxlines'], options['linelength'])
     elif action_type == 'basename':
         new_text = os.path.splitext(os.path.basename(text))[0]
     elif action_type == 'template' and check_ext(text, 'pdf'):
         pattern_string = pattern_string.strip() if pattern_string else None
         if rule and (not pattern_string or re.search(pattern_string, text, flags=flags)):
+            # return '', True, action_results
             from similarity import pdf_similarity
 
             options = {
                 'path': '',
-                'threshold': 70
+                'threshold': 70,
+                'verbose': 'false'
             }
 
             options = get_rule_options(options, rule)
@@ -46,26 +67,49 @@ def parse_action(text:str, action_type:str, pattern_string : Optional[str] = Non
             if check_ext(options['path'], 'pdf'):
                 score = pdf_similarity(options['path'], text)
                 # print([text, score*100, score*100 > options['threshold'], pattern_string])
+                # print('.')
+                if options['verbose'] == 'true':
+                    rprint(f'[cyan]template[white] -> [blue]path: [white]{options["path"]} [blue]filepath:[white] {text} [{"green" if score*100 > options["threshold"] else "red"}]score: [white]{score*100:.2f}')
 
                 return '', score*100 > int(options['threshold']), action_results
 
     if pattern_string is not None and action_type not in non_text_transformers:
-        text_match = re.search(pattern_string, new_text, flags = flags)
+        try:
+            text_match = re.search(pattern_string, new_text, flags = flags)
+        except:
+            print(pattern_string)
+            text_match = None
+
         if text_match:
             matchdict = text_match.groupdict()
             matchgroups = text_match.groups()
+
+            if not hasattr(action_results, action_type):
+                action_results[action_type] = {}
+
+            if action_type not in not_string_valid:
+                action_results[action_type]['string'] = text_match.string
+            else:
+                action_results[action_type]['string'] = ''
             
             if (len(matchdict) or len(matchgroups)) and not hasattr(action_results, action_type):
-                action_results[action_type] = {'groups': {}}
+                action_results[action_type]['groups'] = {}
 
             if len(matchdict):
                 action_results[action_type]['groups'] = { **action_results[action_type]['groups'], **text_match.groupdict() }
             if len(matchgroups):
                 action_results[action_type]['groups'] = { **action_results[action_type]['groups'], **dict(zip(range(1,len(matchgroups)+1), matchgroups)) }
+            
 
-            if len(action_results):
-                print(action_results)
-        return '', bool(text_match), action_results
+            # if len(action_results):
+                # print(action_results)
+        match_result = bool(text_match)
+
+        if action_type == 'filecontent' and 'verbose' in options and options['verbose'] == 'true':
+            rprint(f'[cyan]filecontent [white]-> [blue]pattern: [white]{pattern_string} [blue]match: {"[green]true" if match_result else "[red]false"}')
+            print(new_text)
+
+        return '', match_result, action_results
 
     if new_text:
         return new_text, True, action_results
@@ -212,6 +256,45 @@ class Block:
 
         return blocks_pending
 
+def parse_placeholder(destination_item, input_match):
+    dest_action,dest_name = destination_item
+
+    command_match = re.search(r'((?P<command>\w+)\( *)?(?P<content>[\w\.]+)( *\))?', dest_action).groupdict()
+
+    if command_match['content'] is None:
+        return None
+
+    new_text = ''
+    dest_action_split = command_match['content'].split('.')
+
+    if len(dest_action_split) > 1:
+        if dest_action_split[1] == 'groups':
+            try:
+                if dest_action_split[2].isnumeric():
+                    dest_action_split[2] = int(dest_action_split[2])
+                new_text = input_match[2][dest_action_split[0]]['groups'][dest_action_split[2]]
+            except:
+                return None
+    elif command_match['content'] in input_match[2]:
+        new_text = input_match[2][command_match['content']]['string']
+
+    if new_text:
+        if command_match['command'] is not None:
+            if command_match['command'] == 'lowercase':
+                new_text = new_text.lower()
+            elif command_match['command'] == 'uppercase':
+                new_text = new_text.upper()
+            elif command_match['command'] == 'titlecase':
+                new_text = new_text.title()
+        
+        return new_text
+
+    parsed_action_text, parse_status, _ = parse_action(input_match[0], dest_action)
+    if parse_status == False:
+        return None
+
+    return parsed_action_text
+
 class Destination_set:
     def __init__(self, children) -> None:
         self.children : List[Destination_rule] = children or []
@@ -235,27 +318,16 @@ class Destination_set:
 
                 inner_output = ""
                 for destination_item in child.content:
+                    dest_name = destination_item[1]
                     if isinstance(destination_item, str):
                         inner_output += destination_item
-                    elif destination_item[1] is None or destination_item[1] == input_match[1]: # group name
-                        dest_action,dest_name = destination_item
-                        if '.' in dest_action:
-                            dest_action_split = dest_action.split('.')
-                            if len(dest_action_split) <= 1:
-                                break
-                            if dest_action_split[1] == 'groups':
-                                try:
-                                    if dest_action_split[2].isnumeric():
-                                        inner_output += input_match[2][dest_action_split[0]]['groups'][int(dest_action_split[2])]
-                                    else:
-                                        inner_output += input_match[2][dest_action_split[0]]['groups'][dest_action_split[2]]
-                                except:
-                                    break
+                    elif dest_name is None or dest_name == input_match[1]: # group name
+                        parsed_text = parse_placeholder(destination_item, input_match)
+
+                        if parsed_text:
+                            inner_output += parsed_text
                         else:
-                            parsed_action_text, parse_status, _ = parse_action(input_match[0], destination_item[0])
-                            inner_output += parsed_action_text
-                            if parse_status == False:
-                                break
+                            break
                     else:
                         break
                 else:
@@ -290,7 +362,7 @@ class Input_rule:
             self.action_content = action_split[1:]
 
     
-    def eval(self, root:Union[str, None]=None):
+    def eval(self, root:Union[str, None]=None, file_paths:Union[List[str], None]=None):
         if root is None:
             root = self.root    
         regex_match = re.search(r'^\s*\/(.+)\/([a-zA-Z]+)', self.content)
@@ -312,11 +384,18 @@ class Input_rule:
 
         results = []
 
-        for file in os.listdir(root):
-            _, parse_status, action_results = parse_action(root+'/'+file, self.action_type, pattern_string, flags = pattern_flags, rule=self)
-            if parse_status:
+        if file_paths:
+            for file in file_paths:
+                _, parse_status, action_results = parse_action(file, self.action_type, pattern_string, flags = pattern_flags, rule=self)
 
-                results.append(( root+'/'+file, self.name, action_results))
+                if parse_status:
+                    results.append(( file, self.name, action_results))
+        else:
+            for file in os.listdir(root):
+                _, parse_status, action_results = parse_action(root+'/'+file, self.action_type, pattern_string, flags = pattern_flags, rule=self)
+
+                if parse_status:
+                    results.append(( root+'/'+file, self.name, action_results))
 
         return results
     
@@ -340,14 +419,25 @@ class Rule_set:
 
     def eval_children(self):
         final_results = []
+        or_final_results = []
         previous_operation = 'or'
 
-        for child in self.children:
-            current_results = child.eval(self.root)
 
+        for child in self.children:
             final_path_list = [x[0] for x in final_results]
-            current_path_list = [x[0] for x in current_results]
             final_results_len = len(final_path_list)
+
+            if previous_operation == 'and':
+                if len(final_path_list):
+                    current_results = child.eval(self.root, final_path_list)
+                else:
+                    current_results = []
+            else:
+                current_results = child.eval(self.root)
+
+            current_path_list = [x[0] for x in current_results]
+
+            # rprint(current_results)
 
             if previous_operation == 'or':
                 # same_items = [x for x in current_results if x[0] in final_path_list]
@@ -366,22 +456,40 @@ class Rule_set:
             elif previous_operation == 'and':
                 final_results = [x for x in final_results if x[0] in current_path_list]
 
+                # print('-----')
+                # count = 0
+                # rprint(final_results)
                 for i,final_item in enumerate(final_results):
                     final_path, final_name, final_action_options = final_item
 
                     for result_item in current_results:
                         path, name, action_options = result_item
 
-                        if path == final_path and (name is not None or final_name is None):
+                        if path == final_path and (name is not None or final_name is None): # keep the last named group 
+                            # count+=1
+                            # print(name)
                             final_results[i] = (path, name, dict(mergedicts(final_action_options, action_options)))
-                        else:
-                            final_results[i] = (final_path, final_name, dict(mergedicts(final_action_options, action_options)))
+                        # else:
+                            # final_results[i] = (final_path, final_results[i][1], dict(mergedicts(final_action_options, action_options)))
+                # if count:
+                #     print(count)
+                #     rprint(current_results)
+                #     rprint(final_results)
 
+
+            or_final_path_list = [x[0] for x in or_final_results]
+            if previous_operation == 'and' and child.operation == 'or':
+                or_final_results.extend(x for x in final_results if x[0] not in or_final_path_list)
+                final_results = []
             previous_operation = child.operation
 
-        print(final_results)
+        or_final_results.extend(x for x in final_results if x[0] not in or_final_path_list)
 
-        return list(final_results)
+        # print('final_results ---------')
+        # rprint(or_final_results)
+        # print(final_results)
+
+        return list(or_final_results)
 
 
 class Destination_rule:

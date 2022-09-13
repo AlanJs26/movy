@@ -133,7 +133,8 @@ with open(args.history,'r') as f:
 # TODO -> match folders
 # TODO -> add "run external command" action
 # TODO -> add aliases
-# TODO -> write README
+# TODO -> write README A
+
 
 if args.undo:
     move_pairs(file_history.previous_items(), history=file_history) 

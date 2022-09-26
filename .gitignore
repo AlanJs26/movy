@@ -10,7 +10,8 @@ scripts/
 
 history.txt
 movy_log.txt
-*.exe
+./*.exe
+!dist/**/*
 
 # C extensions
 *.so
@@ -19,7 +20,7 @@ movy_log.txt
 .Python
 build/
 develop-eggs/
-dist/
+# dist/
 downloads/
 eggs/
 .eggs/

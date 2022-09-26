@@ -3,7 +3,6 @@ import os
 from datetime import datetime
 import re
 from rich import print as rprint
-# from rich import print
 from utils import check_ext, get_file_content, mergedicts
 
 def parse_action(text:str, action_type:str, pattern_string : Optional[str] = None, flags=re.MULTILINE, rule = None) -> Tuple[str,bool]:
@@ -166,7 +165,7 @@ class FileHistory:
         last_date = self.history_array[-1].date
 
         for h_item in reversed(self.history_array):
-            if h_item.date != last_date:
+            if h_item.date > last_date:
                 break
             if not os.path.isfile(h_item.destination_path):
                 h_item.destination_path = os.path.join(h_item.destination_path, os.path.basename(h_item.input_path))

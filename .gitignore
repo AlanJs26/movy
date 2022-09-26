@@ -5,6 +5,12 @@ __pycache__/
 
 .vscode/
 converted/
+build/
+scripts/
+
+history.txt
+movy_log.txt
+*.exe
 
 # C extensions
 *.so

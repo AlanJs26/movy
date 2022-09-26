@@ -1,0 +1,4 @@
+daemon: true
+force: true
+terminal: false
+root: C:/Users/alanj/Downloads

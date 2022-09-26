@@ -1,4 +1,4 @@
-from genericpath import isdir, isfile
+import argparse
 from parsing import *
 from time import sleep
 import yaml
@@ -7,6 +7,7 @@ from rich import print
 from argparse import RawTextHelpFormatter, ArgumentParser
 from typing import Optional
 import shutil
+
 
 command_aliases = {
     'move': 'moved',
@@ -31,19 +32,13 @@ def dir_path(string, asfile=False):
     return new_string
 
 
-def string_arr(string):
-    split_string = string.split()
-    output = []
+def string_parse(string):
     if string:
-        for item in split_string:
-            new_string = dir_path(item, True)
-            if new_string:
-                output.append(new_string)
-            else:
-                return []
-    if len(output) == 0:
-        print('please provide a valid path to proceed')
-    return output
+        new_string = dir_path(string, True)
+        if new_string:
+            return new_string
+    print('please provide a valid path to proceed')
+    return None
 
 def move_pairs(files, history : Optional[FileHistory]=None, prefix=''):
     if len(files) == 0:
@@ -89,7 +84,7 @@ def move_pairs(files, history : Optional[FileHistory]=None, prefix=''):
 
 parser = ArgumentParser(description='Move, copy and rename files programmatically', formatter_class=RawTextHelpFormatter)
 
-parser.add_argument('script_path',     action='store', default=[],         type=string_arr, nargs='?',
+parser.add_argument('script_path',     action='store', default=[],         type=string_parse, nargs='+',
                     help='path to the script (accepts more than one script at same time)')
 parser.add_argument('-d','--daemon',   action='store_true',
                     help='runs the program as a daemon')
@@ -103,7 +98,7 @@ parser.add_argument('-f','--force',    action='store_true',
                     help='run all blocks in the script ignoring the configured routines')
 parser.add_argument('-w','--overwrite',    action='store_true',
                     help='overwrite files on duplicates. The default behaviour is skip duplicates.')
-parser.add_argument('--history',    action='store', default=os.path.join(os.path.expanduser('~'), '.movy/history.txt'),    type=lambda x: dir_path(x,True),
+parser.add_argument('--history',    action='store', default=os.path.join(os.getcwd(), 'history.txt'),    type=lambda x: dir_path(x,True),
                     help='path to the history file')
 parser.add_argument('-r', '--root',    action='store', default='./',    type=dir_path,
                     help='path used as root')
@@ -111,7 +106,7 @@ parser.add_argument('-r', '--root',    action='store', default='./',    type=dir
 args = parser.parse_args()
 
 file_history = FileHistory()
-with open(args.history,'r') as f:
+with open(args.history,'r', encoding='utf-8') as f:
     lines = f.readlines()
     file_history.history_array = file_history.parse(''.join(lines))
 
@@ -139,16 +134,18 @@ with open(args.history,'r') as f:
 if args.undo:
     move_pairs(file_history.previous_items(), history=file_history) 
 
-    with open(args.history,'w') as f:
-        f.write(file_history.toString())
+    with open(args.history,'w', encoding='utf-8') as f:
+        f.write(file_history.toString().encode('cp850', 'replace').decode('cp850'))
+        # f.write(file_history.toString())
     exit()
 
 if len(args.script_path) == 0:
+    print("please provide a script file")
     exit()
 
 scripts = []
 for current_script_path in args.script_path:
-    with open(current_script_path,'r') as f:
+    with open(current_script_path,'r', encoding='utf-8') as f:
         scripts.append(f.read())
 
 yaml_regex = re.compile(r'^\s*-{3,}(.+?)-{3,}', re.DOTALL)

@@ -1,0 +1,62 @@
+---
+root: C:/Users/alanj/Downloads
+---
+# overwrite: true
+
+[[routine 1]]
+[18h20m] action set
+[15h] block_2
+
+[[word]]
+[extension] \b(doc|docx)\b -> G:\Users\Alan\Documents\_Arquivos\Office\Word
+
+
+[[pdf]]
+[basename] fatura and
+[template] {  
+   [path] C:/Users/alanj/Downloads/movy_templates/luz.pdf
+   [verbose] true
+} and
+[filecontent] CS *(?P<numero>[0-9][0-9]) {
+   [verbose] false
+} and
+[filecontent] /cpf/cnpj[^\n]+\n(^ *\n)*(\w+)/mi {
+   [verbose] false
+} [[luz]]
+[basename] ^NF and
+[filecontent] /social\/nome: *(\w+)/i {
+   [verbose] false
+} and
+[template] {  
+   [path] C:/Users/alanj/Downloads/movy_templates/nota.pdf
+   [verbose] true
+} [[nota]]
+[extension] /pdf/i
+-> G:/Users/Alan/Documents/_Arquivos/PDFs/Contas de luz/{titlecase(filecontent.groups.2)|luz}/Casa {filecontent.groups.numero}
+G:/Users/Alan/Documents/_Arquivos/PDFs/Notas/{titlecase(filecontent.groups.1)|nota}
+G:/Users/Alan/Documents/_Arquivos/PDFs
+
+# [[pdf]]
+# [template|C:/Users/alanj/Downloads/diff-pdf-win-0.5/fatura1.pdf] fatura
+# -> G:/Users/Alan/Documents/_Arquivos/PDFs
+
+[[programming]]
+[extension] \b(c|cpp)\b
+-> G:\Users\Alan\Documents\_Codes\{uppercase(extension)}\standalone
+
+[[executaveis]]
+[extension] \b(exe|msi)\b -> G:/Users/Alan/Documents/_Arquivos/Executaveis/
+
+[[imagens]]
+[extension] \b(png|jpeg|jpg|webp)\b -> G:\Users\Alan\Pictures\Outros
+
+[[Outras imagens]]
+[extension] \b(svg)\b
+-> G:\Users\Alan\Pictures\{uppercase(extension)}
+
+[[iso files]]
+[extension] \b(iso)\b
+-> G:\Users\Alan\Documents\_Arquivos\{uppercase(extension)}
+
+[[excel]]
+[extension] \b(xlsx|csv|xls)\b -> G:\Users\Alan\Documents\_Arquivos\Office\Excel

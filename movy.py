@@ -8,8 +8,12 @@ try:
     with open('settings.yaml') as f:
         settings = {"daemon": True, **yaml.load(f, Loader=yaml.loader.SafeLoader)}
 except Exception as e:
-    print("cannot read settings.yaml")
-    exit()
+    with open('settings.yaml', 'w') as f:
+        f.write('''
+daemon: true
+terminal: false
+        ''')
+    settings = {"daemon": True, "terminal": False}
 
 def addQuotes(text):
     return '"'+text.replace("\\", "/")+'"'
@@ -30,8 +34,8 @@ def run_on_terminal(command):
     os.system(full_command)
         
 command_args = [
-    "python",
-    addQuotes(os.path.join(cwd, "main.py")),
+    # "python",
+    addQuotes(os.path.join(cwd, "main.exe")),
     *addRoot(cwd+"/scripts/", os.listdir("scripts"))] 
 
 should_open_terminal = False
@@ -63,6 +67,7 @@ else:
     menu = Menu(
         MenuItem('Test scripts in terminal', lambda _: run_on_terminal(" ".join(command_args)) ),
         MenuItem('Undo last change', lambda _: run_on_terminal(" ".join(command_args+["--undo"])) ),
+        MenuItem('Open logs...', lambda _:os.system('notepad '+os.path.join(addQuotes(cwd),"movy_log.txt")) ),
         MenuItem('Open scripts...', lambda _:os.system('start /d '+addQuotes(cwd)+" scripts") ),
         MenuItem('Exit', lambda _:icon.stop())
     )

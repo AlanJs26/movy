@@ -1,0 +1,28 @@
+[2022-09-27 21:12:33.703504] C:/Users/alanj/Downloads/fatura-Junho_22-0202170572.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs/Contas de luz/Cosme/Casa 03
+[2022-09-27 21:12:33.703504] C:/Users/alanj/Downloads/1663850883540.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-09-27 21:12:33.703504] C:/Users/alanj/Downloads/2ª Atividade avaliativa.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-09-27 21:12:33.703504] C:/Users/alanj/Downloads/Are_Anime_Titties_Aerodynamic.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-09-27 21:12:33.703504] C:/Users/alanj/Downloads/Atividade Avaliativa 1.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-09-27 21:12:33.703504] C:/Users/alanj/Downloads/aula 1.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-09-27 21:12:33.703504] C:/Users/alanj/Downloads/Aula06-Exercicios-v01.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-09-27 21:12:33.703504] C:/Users/alanj/Downloads/document.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-09-27 21:12:33.703504] C:/Users/alanj/Downloads/EP1pcs3111.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-09-27 21:12:33.703504] C:/Users/alanj/Downloads/licenciamento uno nethe fkd2I98.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-09-27 21:12:33.703504] C:/Users/alanj/Downloads/Lista_01_ESTÁTICA 2022.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-09-27 21:12:33.703504] C:/Users/alanj/Downloads/Módulo1-EstruturadeDados-Heap-2020.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-09-27 21:12:33.703504] C:/Users/alanj/Downloads/Oliveira_LuizFernandoPintoDe_M.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-09-27 21:12:33.703504] C:/Users/alanj/Downloads/Relatório parcial  (1).pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-09-27 21:12:33.703504] C:/Users/alanj/Downloads/Relatório parcial .pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-09-27 21:12:33.703504] C:/Users/alanj/Downloads/Resolução da Atividade Avaliativa 1.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-09-27 21:12:33.703504] C:/Users/alanj/Downloads/texto_aulas_ BLOCO _1.pdf -> G:/Users/Alan/Documents/_Arquivos/PDFs
+[2022-09-27 21:12:33.726504] C:/Users/alanj/Downloads/wasm-pack-init.exe -> G:/Users/Alan/Documents/_Arquivos/Executaveis/
+[2022-09-27 21:12:33.731505] C:/Users/alanj/Downloads/CNH Luzinete.jpg -> G:\Users\Alan\Pictures\Outros
+[2022-09-27 21:12:33.731505] C:/Users/alanj/Downloads/comprovante de endereco clovis.jpeg -> G:\Users\Alan\Pictures\Outros
+[2022-09-27 21:12:33.731505] C:/Users/alanj/Downloads/Daco_1091366.png -> G:\Users\Alan\Pictures\Outros
+[2022-09-27 21:12:33.731505] C:/Users/alanj/Downloads/Documento de tranferencia frente.jpg -> G:\Users\Alan\Pictures\Outros
+[2022-09-27 21:12:33.731505] C:/Users/alanj/Downloads/Documento de tranferencia verso.jpg -> G:\Users\Alan\Pictures\Outros
+[2022-09-27 21:12:33.731505] C:/Users/alanj/Downloads/m2i8b1d3A0N4b1b1.png -> G:\Users\Alan\Pictures\Outros
+[2022-09-27 21:12:33.731505] C:/Users/alanj/Downloads/pngaaa.com-401908.png -> G:\Users\Alan\Pictures\Outros
+[2022-09-27 21:12:33.731505] C:/Users/alanj/Downloads/procuracao clovis fernandes (1).jpeg -> G:\Users\Alan\Pictures\Outros
+[2022-09-27 21:12:33.731505] C:/Users/alanj/Downloads/rg clovis fernandes.jpeg -> G:\Users\Alan\Pictures\Outros
+[2022-09-27 21:12:33.731505] C:/Users/alanj/Downloads/WhatsApp Image 2022-09-18 at 14.07.23.jpeg -> G:\Users\Alan\Pictures\Outros

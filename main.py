@@ -1,4 +1,3 @@
-import argparse
 from parsing import *
 from time import sleep
 import yaml

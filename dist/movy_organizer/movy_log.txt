@@ -1,0 +1,545 @@
+Running as daemon (updating after 60 seconds)
+
+Updating...
+evaluating Outras imagens
+nothing to do
+
+
+template -> path: C:/Users/alanj/Downloads/movy_templates/luz.pdf filepath: 
+C:/Users/alanj/Downloads/fatura-Junho_22-0202170572.pdf score: 95.42
+evaluating pdf
+moved fatura-Junho_22-0202170572.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs/Contas de luz/Cosme/Casa 03
+moved 1663850883540.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved 2ª Atividade avaliativa.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Are_Anime_Titties_Aerodynamic.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Atividade Avaliativa 1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved aula 1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Aula06-Exercicios-v01.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved document.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved EP1pcs3111.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved licenciamento uno nethe fkd2I98.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Lista_01_ESTÁTICA 2022.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Módulo1-EstruturadeDados-Heap-2020.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Oliveira_LuizFernandoPintoDe_M.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Relatório parcial  (1).pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Relatório parcial .pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Resolução da Atividade Avaliativa 1.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved texto_aulas_ BLOCO _1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+
+
+evaluating executaveis
+moved wasm-pack-init.exe to G:/Users/Alan/Documents/_Arquivos/Executaveis/
+
+
+evaluating imagens
+moved CNH Luzinete.jpg to G:\Users\Alan\Pictures\Outros
+moved comprovante de endereco clovis.jpeg to G:\Users\Alan\Pictures\Outros
+moved Daco_1091366.png to G:\Users\Alan\Pictures\Outros
+moved Documento de tranferencia frente.jpg to G:\Users\Alan\Pictures\Outros
+moved Documento de tranferencia verso.jpg to G:\Users\Alan\Pictures\Outros
+moved m2i8b1d3A0N4b1b1.png to G:\Users\Alan\Pictures\Outros
+moved pngaaa.com-401908.png to G:\Users\Alan\Pictures\Outros
+moved procuracao clovis fernandes (1).jpeg to G:\Users\Alan\Pictures\Outros
+moved rg clovis fernandes.jpeg to G:\Users\Alan\Pictures\Outros
+moved WhatsApp Image 2022-09-18 at 14.07.23.jpeg to 
+G:\Users\Alan\Pictures\Outros
+
+
+evaluating iso files
+nothing to do
+
+
+evaluating excel
+nothing to do
+
+
+evaluating programming
+nothing to do
+
+
+evaluating word
+nothing to do
+
+
+
+Updating...
+evaluating Outras imagens
+nothing to do
+
+
+template -> path: C:/Users/alanj/Downloads/movy_templates/luz.pdf filepath: 
+C:/Users/alanj/Downloads/fatura-Junho_22-0202170572.pdf score: 95.42
+evaluating pdf
+moved fatura-Junho_22-0202170572.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs/Contas de luz/Cosme/Casa 03
+moved 1663850883540.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved 2ª Atividade avaliativa.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Are_Anime_Titties_Aerodynamic.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Atividade Avaliativa 1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved aula 1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Aula06-Exercicios-v01.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved document.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved EP1pcs3111.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved licenciamento uno nethe fkd2I98.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Lista_01_ESTÁTICA 2022.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Módulo1-EstruturadeDados-Heap-2020.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Oliveira_LuizFernandoPintoDe_M.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Relatório parcial  (1).pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Relatório parcial .pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Resolução da Atividade Avaliativa 1.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved texto_aulas_ BLOCO _1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+
+
+evaluating executaveis
+moved wasm-pack-init.exe to G:/Users/Alan/Documents/_Arquivos/Executaveis/
+
+
+evaluating imagens
+moved CNH Luzinete.jpg to G:\Users\Alan\Pictures\Outros
+moved comprovante de endereco clovis.jpeg to G:\Users\Alan\Pictures\Outros
+moved Daco_1091366.png to G:\Users\Alan\Pictures\Outros
+moved Documento de tranferencia frente.jpg to G:\Users\Alan\Pictures\Outros
+moved Documento de tranferencia verso.jpg to G:\Users\Alan\Pictures\Outros
+moved m2i8b1d3A0N4b1b1.png to G:\Users\Alan\Pictures\Outros
+moved pngaaa.com-401908.png to G:\Users\Alan\Pictures\Outros
+moved procuracao clovis fernandes (1).jpeg to G:\Users\Alan\Pictures\Outros
+moved rg clovis fernandes.jpeg to G:\Users\Alan\Pictures\Outros
+moved WhatsApp Image 2022-09-18 at 14.07.23.jpeg to 
+G:\Users\Alan\Pictures\Outros
+
+
+evaluating iso files
+nothing to do
+
+
+evaluating excel
+nothing to do
+
+
+evaluating programming
+nothing to do
+
+
+evaluating word
+nothing to do
+
+
+
+Updating...
+evaluating Outras imagens
+nothing to do
+
+
+template -> path: C:/Users/alanj/Downloads/movy_templates/luz.pdf filepath: 
+C:/Users/alanj/Downloads/fatura-Junho_22-0202170572.pdf score: 95.42
+evaluating pdf
+moved fatura-Junho_22-0202170572.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs/Contas de luz/Cosme/Casa 03
+moved 1663850883540.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved 2ª Atividade avaliativa.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Are_Anime_Titties_Aerodynamic.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Atividade Avaliativa 1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved aula 1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Aula06-Exercicios-v01.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved document.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved EP1pcs3111.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved licenciamento uno nethe fkd2I98.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Lista_01_ESTÁTICA 2022.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Módulo1-EstruturadeDados-Heap-2020.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Oliveira_LuizFernandoPintoDe_M.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Relatório parcial  (1).pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Relatório parcial .pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Resolução da Atividade Avaliativa 1.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved texto_aulas_ BLOCO _1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+
+
+evaluating executaveis
+moved wasm-pack-init.exe to G:/Users/Alan/Documents/_Arquivos/Executaveis/
+
+
+evaluating imagens
+moved CNH Luzinete.jpg to G:\Users\Alan\Pictures\Outros
+moved comprovante de endereco clovis.jpeg to G:\Users\Alan\Pictures\Outros
+moved Daco_1091366.png to G:\Users\Alan\Pictures\Outros
+moved Documento de tranferencia frente.jpg to G:\Users\Alan\Pictures\Outros
+moved Documento de tranferencia verso.jpg to G:\Users\Alan\Pictures\Outros
+moved m2i8b1d3A0N4b1b1.png to G:\Users\Alan\Pictures\Outros
+moved pngaaa.com-401908.png to G:\Users\Alan\Pictures\Outros
+moved procuracao clovis fernandes (1).jpeg to G:\Users\Alan\Pictures\Outros
+moved rg clovis fernandes.jpeg to G:\Users\Alan\Pictures\Outros
+moved WhatsApp Image 2022-09-18 at 14.07.23.jpeg to 
+G:\Users\Alan\Pictures\Outros
+
+
+evaluating iso files
+nothing to do
+
+
+evaluating excel
+nothing to do
+
+
+evaluating programming
+nothing to do
+
+
+evaluating word
+nothing to do
+
+
+
+Updating...
+evaluating Outras imagens
+nothing to do
+
+
+template -> path: C:/Users/alanj/Downloads/movy_templates/luz.pdf filepath: 
+C:/Users/alanj/Downloads/fatura-Junho_22-0202170572.pdf score: 95.42
+evaluating pdf
+moved fatura-Junho_22-0202170572.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs/Contas de luz/Cosme/Casa 03
+moved 1663850883540.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved 2ª Atividade avaliativa.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Are_Anime_Titties_Aerodynamic.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Atividade Avaliativa 1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved aula 1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Aula06-Exercicios-v01.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved document.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved EP1pcs3111.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved licenciamento uno nethe fkd2I98.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Lista_01_ESTÁTICA 2022.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Módulo1-EstruturadeDados-Heap-2020.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Oliveira_LuizFernandoPintoDe_M.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Relatório parcial  (1).pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Relatório parcial .pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Resolução da Atividade Avaliativa 1.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved texto_aulas_ BLOCO _1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+
+
+evaluating executaveis
+moved wasm-pack-init.exe to G:/Users/Alan/Documents/_Arquivos/Executaveis/
+
+
+evaluating imagens
+moved CNH Luzinete.jpg to G:\Users\Alan\Pictures\Outros
+moved comprovante de endereco clovis.jpeg to G:\Users\Alan\Pictures\Outros
+moved Daco_1091366.png to G:\Users\Alan\Pictures\Outros
+moved Documento de tranferencia frente.jpg to G:\Users\Alan\Pictures\Outros
+moved Documento de tranferencia verso.jpg to G:\Users\Alan\Pictures\Outros
+moved m2i8b1d3A0N4b1b1.png to G:\Users\Alan\Pictures\Outros
+moved pngaaa.com-401908.png to G:\Users\Alan\Pictures\Outros
+moved procuracao clovis fernandes (1).jpeg to G:\Users\Alan\Pictures\Outros
+moved rg clovis fernandes.jpeg to G:\Users\Alan\Pictures\Outros
+moved WhatsApp Image 2022-09-18 at 14.07.23.jpeg to 
+G:\Users\Alan\Pictures\Outros
+
+
+evaluating iso files
+nothing to do
+
+
+evaluating excel
+nothing to do
+
+
+evaluating programming
+nothing to do
+
+
+evaluating word
+nothing to do
+
+
+
+Updating...
+evaluating Outras imagens
+nothing to do
+
+
+template -> path: C:/Users/alanj/Downloads/movy_templates/luz.pdf filepath: 
+C:/Users/alanj/Downloads/fatura-Junho_22-0202170572.pdf score: 95.42
+evaluating pdf
+moved fatura-Junho_22-0202170572.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs/Contas de luz/Cosme/Casa 03
+moved 1663850883540.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved 2ª Atividade avaliativa.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Are_Anime_Titties_Aerodynamic.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Atividade Avaliativa 1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved aula 1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Aula06-Exercicios-v01.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved document.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved EP1pcs3111.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved licenciamento uno nethe fkd2I98.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Lista_01_ESTÁTICA 2022.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Módulo1-EstruturadeDados-Heap-2020.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Oliveira_LuizFernandoPintoDe_M.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Relatório parcial  (1).pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Relatório parcial .pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Resolução da Atividade Avaliativa 1.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved texto_aulas_ BLOCO _1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+
+
+evaluating executaveis
+moved wasm-pack-init.exe to G:/Users/Alan/Documents/_Arquivos/Executaveis/
+
+
+evaluating imagens
+moved CNH Luzinete.jpg to G:\Users\Alan\Pictures\Outros
+moved comprovante de endereco clovis.jpeg to G:\Users\Alan\Pictures\Outros
+moved Daco_1091366.png to G:\Users\Alan\Pictures\Outros
+moved Documento de tranferencia frente.jpg to G:\Users\Alan\Pictures\Outros
+moved Documento de tranferencia verso.jpg to G:\Users\Alan\Pictures\Outros
+moved m2i8b1d3A0N4b1b1.png to G:\Users\Alan\Pictures\Outros
+moved pngaaa.com-401908.png to G:\Users\Alan\Pictures\Outros
+moved procuracao clovis fernandes (1).jpeg to G:\Users\Alan\Pictures\Outros
+moved rg clovis fernandes.jpeg to G:\Users\Alan\Pictures\Outros
+moved WhatsApp Image 2022-09-18 at 14.07.23.jpeg to 
+G:\Users\Alan\Pictures\Outros
+
+
+evaluating iso files
+nothing to do
+
+
+evaluating excel
+nothing to do
+
+
+evaluating programming
+nothing to do
+
+
+evaluating word
+nothing to do
+
+
+
+Updating...
+evaluating Outras imagens
+nothing to do
+
+
+template -> path: C:/Users/alanj/Downloads/movy_templates/luz.pdf filepath: 
+C:/Users/alanj/Downloads/fatura-Junho_22-0202170572.pdf score: 95.42
+evaluating pdf
+moved fatura-Junho_22-0202170572.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs/Contas de luz/Cosme/Casa 03
+moved 1663850883540.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved 2ª Atividade avaliativa.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Are_Anime_Titties_Aerodynamic.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Atividade Avaliativa 1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved aula 1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Aula06-Exercicios-v01.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved document.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved EP1pcs3111.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved licenciamento uno nethe fkd2I98.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Lista_01_ESTÁTICA 2022.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Módulo1-EstruturadeDados-Heap-2020.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Oliveira_LuizFernandoPintoDe_M.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Relatório parcial  (1).pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Relatório parcial .pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Resolução da Atividade Avaliativa 1.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved texto_aulas_ BLOCO _1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+
+
+evaluating executaveis
+moved wasm-pack-init.exe to G:/Users/Alan/Documents/_Arquivos/Executaveis/
+
+
+evaluating imagens
+moved CNH Luzinete.jpg to G:\Users\Alan\Pictures\Outros
+moved comprovante de endereco clovis.jpeg to G:\Users\Alan\Pictures\Outros
+moved Daco_1091366.png to G:\Users\Alan\Pictures\Outros
+moved Documento de tranferencia frente.jpg to G:\Users\Alan\Pictures\Outros
+moved Documento de tranferencia verso.jpg to G:\Users\Alan\Pictures\Outros
+moved m2i8b1d3A0N4b1b1.png to G:\Users\Alan\Pictures\Outros
+moved pngaaa.com-401908.png to G:\Users\Alan\Pictures\Outros
+moved procuracao clovis fernandes (1).jpeg to G:\Users\Alan\Pictures\Outros
+moved rg clovis fernandes.jpeg to G:\Users\Alan\Pictures\Outros
+moved WhatsApp Image 2022-09-18 at 14.07.23.jpeg to 
+G:\Users\Alan\Pictures\Outros
+
+
+evaluating iso files
+nothing to do
+
+
+evaluating excel
+nothing to do
+
+
+evaluating programming
+nothing to do
+
+
+evaluating word
+nothing to do
+
+
+
+Updating...
+evaluating Outras imagens
+nothing to do
+
+
+template -> path: C:/Users/alanj/Downloads/movy_templates/luz.pdf filepath: 
+C:/Users/alanj/Downloads/fatura-Junho_22-0202170572.pdf score: 95.42
+evaluating pdf
+moved fatura-Junho_22-0202170572.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs/Contas de luz/Cosme/Casa 03
+moved 1663850883540.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved 2ª Atividade avaliativa.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Are_Anime_Titties_Aerodynamic.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Atividade Avaliativa 1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved aula 1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Aula06-Exercicios-v01.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved document.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved EP1pcs3111.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved licenciamento uno nethe fkd2I98.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Lista_01_ESTÁTICA 2022.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Módulo1-EstruturadeDados-Heap-2020.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Oliveira_LuizFernandoPintoDe_M.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Relatório parcial  (1).pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Relatório parcial .pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Resolução da Atividade Avaliativa 1.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved texto_aulas_ BLOCO _1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+
+
+evaluating executaveis
+moved wasm-pack-init.exe to G:/Users/Alan/Documents/_Arquivos/Executaveis/
+
+
+evaluating imagens
+moved CNH Luzinete.jpg to G:\Users\Alan\Pictures\Outros
+moved comprovante de endereco clovis.jpeg to G:\Users\Alan\Pictures\Outros
+moved Daco_1091366.png to G:\Users\Alan\Pictures\Outros
+moved Documento de tranferencia frente.jpg to G:\Users\Alan\Pictures\Outros
+moved Documento de tranferencia verso.jpg to G:\Users\Alan\Pictures\Outros
+moved m2i8b1d3A0N4b1b1.png to G:\Users\Alan\Pictures\Outros
+moved pngaaa.com-401908.png to G:\Users\Alan\Pictures\Outros
+moved procuracao clovis fernandes (1).jpeg to G:\Users\Alan\Pictures\Outros
+moved rg clovis fernandes.jpeg to G:\Users\Alan\Pictures\Outros
+moved WhatsApp Image 2022-09-18 at 14.07.23.jpeg to 
+G:\Users\Alan\Pictures\Outros
+
+
+evaluating iso files
+nothing to do
+
+
+evaluating excel
+nothing to do
+
+
+evaluating programming
+nothing to do
+
+
+evaluating word
+nothing to do
+
+
+
+Updating...
+evaluating Outras imagens
+nothing to do
+
+
+template -> path: C:/Users/alanj/Downloads/movy_templates/luz.pdf filepath: 
+C:/Users/alanj/Downloads/fatura-Junho_22-0202170572.pdf score: 95.42
+evaluating pdf
+moved fatura-Junho_22-0202170572.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs/Contas de luz/Cosme/Casa 03
+moved 1663850883540.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved 2ª Atividade avaliativa.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Are_Anime_Titties_Aerodynamic.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Atividade Avaliativa 1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved aula 1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Aula06-Exercicios-v01.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved document.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved EP1pcs3111.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved licenciamento uno nethe fkd2I98.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Lista_01_ESTÁTICA 2022.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Módulo1-EstruturadeDados-Heap-2020.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Oliveira_LuizFernandoPintoDe_M.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Relatório parcial  (1).pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Relatório parcial .pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+moved Resolução da Atividade Avaliativa 1.pdf to 
+G:/Users/Alan/Documents/_Arquivos/PDFs
+moved texto_aulas_ BLOCO _1.pdf to G:/Users/Alan/Documents/_Arquivos/PDFs
+
+
+evaluating executaveis
+moved wasm-pack-init.exe to G:/Users/Alan/Documents/_Arquivos/Executaveis/
+
+
+evaluating imagens
+moved CNH Luzinete.jpg to G:\Users\Alan\Pictures\Outros
+moved comprovante de endereco clovis.jpeg to G:\Users\Alan\Pictures\Outros
+moved Daco_1091366.png to G:\Users\Alan\Pictures\Outros
+moved Documento de tranferencia frente.jpg to G:\Users\Alan\Pictures\Outros
+moved Documento de tranferencia verso.jpg to G:\Users\Alan\Pictures\Outros
+moved m2i8b1d3A0N4b1b1.png to G:\Users\Alan\Pictures\Outros
+moved pngaaa.com-401908.png to G:\Users\Alan\Pictures\Outros
+moved procuracao clovis fernandes (1).jpeg to G:\Users\Alan\Pictures\Outros
+moved rg clovis fernandes.jpeg to G:\Users\Alan\Pictures\Outros
+moved WhatsApp Image 2022-09-18 at 14.07.23.jpeg to 
+G:\Users\Alan\Pictures\Outros
+
+
+evaluating iso files
+nothing to do
+
+
+evaluating excel
+nothing to do
+
+
+evaluating programming
+nothing to do
+
+
+evaluating word
+nothing to do
+
+

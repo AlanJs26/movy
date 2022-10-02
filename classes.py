@@ -13,7 +13,6 @@ def parse_action(text:str, action_type:str, pattern_string : Optional[str] = Non
     options = {}
 
     def get_rule_options(options:dict, rule):
-
         if type(rule.action_content) == list:
             for opt_key, action_arg in zip(options.keys(), rule.action_content):
                 if type(action_arg) == str and action_arg.isnumeric():
@@ -34,10 +33,64 @@ def parse_action(text:str, action_type:str, pattern_string : Optional[str] = Non
     if action_type == 'regex':
         new_text = text
     elif action_type == 'extension':
-        new_text = os.path.splitext(text)[1].replace('.', '')
+        new_text = os.path.splitext(text)[-1].replace('.', '')
+        pattern_string = f"^{pattern_string}$"
+    elif action_type == 'entity' and check_ext(text, 'pdf'):
+        pattern_string = pattern_string.strip() if pattern_string else None
+        if rule:
+            options = {
+                'maxpages': 2,
+                'radius': 20,
+                'entities': pattern_string,
+                'verbose': 'false'
+            }
+
+            options = get_rule_options(options, rule)
+            content = get_file_content(text, options['maxpages'], 200)
+
+            if pattern_string:
+                parsed_pattern_string = '|'.join("\\b"+item+"\\b" for item in pattern_string.split('|'))
+                match_segments = re.findall(f".{{0,{options['radius']}}}"+parsed_pattern_string+f".{{0,{options['radius']}}}", content, flags=flags)
+                # match_segments = [item.replace('\n', " ") for item in match_segments]
+            else:
+                match_segments = [content]
+
+            
+            if len(match_segments):
+                entities = [item.lower().strip() for item in options['entities'].split('|')]
+                if options['verbose'] == 'true':
+                    rprint(f"[blue]\\[entity][white] {text}")
+                    rprint('[green]    segments:')
+                    for segment in match_segments:
+                        print("        "+segment)
+                    rprint('[green]    entity queries:', end=" ")
+                    for entity in entities:
+                        print(entity, end=", ")
+                    rprint('\n[green]    found entities:')
+
+                import spacy
+
+                nlp = spacy.load("pt_core_news_sm")
+
+                for segment in match_segments:
+                    doc = nlp(segment)
+                    ents = [str(ent).lower() for ent in doc.ents]
+                    if options['verbose'] == 'true':
+                        for e in ents:
+                            rprint("[yellow]        "+e, end=", ")
+                        print("")
+                    for entity in entities:
+                        if any(re.search(entity, ent) for ent in ents):
+                            return '', True, action_results
+            
+            return '', False, action_results
+            
+
+    elif action_type == 'filename':
+        new_text = os.path.basename(text)
     elif action_type == 'filecontent':
         valid_extensions = ['pdf', 'txt', 'csv', 'c', 'cpp', 'dat', 'log', 'xml', 'js', 'jsx', 'py', 'html', 'sh']
-        if os.path.splitext(text)[1].replace('.', '') in valid_extensions:
+        if os.path.splitext(text)[-1].replace('.', '') in valid_extensions:
             options = {
                 'maxlines': 10,
                 'linelength': 200,
@@ -52,7 +105,6 @@ def parse_action(text:str, action_type:str, pattern_string : Optional[str] = Non
     elif action_type == 'template' and check_ext(text, 'pdf'):
         pattern_string = pattern_string.strip() if pattern_string else None
         if rule and (not pattern_string or re.search(pattern_string, text, flags=flags)):
-            # return '', True, action_results
             from similarity import pdf_similarity
 
             options = {
@@ -258,6 +310,9 @@ class Block:
 def parse_placeholder(destination_item, input_match):
     dest_action,dest_name = destination_item
 
+    if dest_action == 'ignore':
+        return ''
+
     command_match = re.search(r'((?P<command>\w+)\( *)?(?P<content>[\w\.]+)( *\))?', dest_action).groupdict()
 
     if command_match['content'] is None:
@@ -317,13 +372,15 @@ class Destination_set:
 
                 inner_output = ""
                 for destination_item in child.content:
-                    dest_name = destination_item[1]
+                    dest_name = destination_item[1] if isinstance(destination_item,tuple) else '*'
+                    input_match_name = input_match[1]
+
                     if isinstance(destination_item, str):
                         inner_output += destination_item
-                    elif dest_name is None or dest_name == input_match[1]: # group name
+                    elif dest_name == None or dest_name == input_match_name: # group name
                         parsed_text = parse_placeholder(destination_item, input_match)
 
-                        if parsed_text:
+                        if isinstance(parsed_text,str):
                             inner_output += parsed_text
                         else:
                             break
@@ -450,7 +507,7 @@ class Rule_set:
                         if final_path == path and (name is not None or final_name is None):
                             final_results[i] = (path, name, dict(mergedicts(final_action_options, action_options)))
                         else:
-                            final_results[i] = (final_path, final_name, dict(mergedicts(final_action_options, action_options)))
+                            final_results[i] = (final_path, final_name, dict(mergedicts(action_options, final_action_options)))
 
             elif previous_operation == 'and':
                 final_results = [x for x in final_results if x[0] in current_path_list]

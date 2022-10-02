@@ -60,17 +60,28 @@ if should_open_terminal:
     run_on_terminal(" ".join(command_args))
 else:
     logfile = open(log_path, 'w')
-    subprocess.Popen(" ".join(command_args), shell=True, stdout=logfile, stderr=logfile)
 
+    a = None
+    def start_process():
+        global a
+        a = subprocess.Popen(" ".join(command_args), shell=True, stdout=logfile, stderr=logfile)
 
     image = Image.open("icon.png")
     menu = Menu(
         MenuItem('Test scripts in terminal', lambda _: run_on_terminal(" ".join(command_args)) ),
         MenuItem('Undo last change', lambda _: run_on_terminal(" ".join(command_args+["--undo"])) ),
-        MenuItem('Open logs...', lambda _:os.system('notepad '+os.path.join(addQuotes(cwd),"movy_log.txt")) ),
-        MenuItem('Open scripts...', lambda _:os.system('start /d '+addQuotes(cwd)+" scripts") ),
-        MenuItem('Exit', lambda _:icon.stop())
+        MenuItem('Restart', lambda _:  
+        (a.terminate(), start_process())
+        ),
+        MenuItem('Open logs...', lambda _:subprocess.call('notepad '+os.path.join(cwd,"movy_log.txt"), shell=True) ),
+        MenuItem('Open scripts...', lambda _:subprocess.call('start /d '+addQuotes(cwd)+" scripts", shell=True) ),
+        MenuItem('Exit', lambda _: icon.stop())
     )
     icon = Icon('name', icon=image, title="Movy folder organizer", menu=menu)
-    icon.run()
+
+    start_process()
+    icon.run() # icon loop
+
+    a.terminate()
+    logfile.close()
     

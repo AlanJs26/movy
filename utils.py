@@ -1,21 +1,28 @@
 import re
 
 def check_ext(text: str, extension: str) -> bool:
-    return bool(re.search('.+\\.'+extension+'$', text))
+    return bool(re.search('.+\\.'+extension+'$', text, flags=re.IGNORECASE))
 
-def get_file_content(file:str, max_lines=10, max_line_length=200):
+def get_file_content(file:str, max_lines=10, max_line_length=200) -> str:
     if check_ext(file, 'pdf'):
         import fitz
 
-        # Open the document
-        pdfIn = fitz.open(file)
+        try:
+            # Open the document
+            pdfIn = fitz.open(file)
+        except Exception as e:
+            return ''
 
         if pdfIn.pageCount <= 0:
             return ""
 
+        count = 0
         file_content = ""
         for page in pdfIn:
+            count += 1
             file_content += page.getText()
+            if count >= max_lines:
+                break
         
         return file_content
     

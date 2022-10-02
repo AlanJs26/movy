@@ -71,6 +71,7 @@ def parse_destination(text : str) -> Union[Destination_rule,None]:
     command_name = destination_match.group('command') or 'move'
     content = destination_match.group('content')
 
+    content = re.sub(r'(?<= |\])\[\[([a-zA-Z ]+)\]\](?= |$|\[)', r'{ignore|\1}', content)
     text_list = re.split(r'(?={)|(?<=})', content)
 
     destination_rule = Destination_rule(None, command_name)
@@ -90,6 +91,9 @@ def parse_destination(text : str) -> Union[Destination_rule,None]:
             continue
 
         destination_rule.content.append(item)
+    
+    if len(destination_rule.content) == 0:
+        return None
 
     return destination_rule
 
@@ -115,7 +119,6 @@ def parse_whole_content(text, root_path : Optional[str] = './') -> List[Block]:
 
         # print(set_name)
 
-
         input_rule_set = Rule_set(set_name or f'block_{count}', None)
         destination_rule_set = Destination_set(None)
 
@@ -140,7 +143,11 @@ def parse_whole_content(text, root_path : Optional[str] = './') -> List[Block]:
         if len(text_split) >= 2:
             destination_section_text = text_split[1]
             for destination_line in destination_section_text.splitlines():
-                block.destination_set.children.append(parse_destination(destination_line))
+                parsed_destination = parse_destination(destination_line)
+                if parsed_destination:
+                    block.destination_set.children.append(parsed_destination)
+                else:
+                    print('[red]invalid destination rule')
         else:
             count-=1
             block.type = 'routine'

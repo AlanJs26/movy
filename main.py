@@ -42,13 +42,15 @@ def string_parse(string):
 def move_pairs(files, history : Optional[FileHistory]=None, prefix=''):
     if len(files) == 0:
         if history:
-            print("[grey30]nothing to undo")
+            print(f"{prefix}[grey30]nothing to undo")
         else:
-            print("[grey30]nothing to do")
+            print(f"{prefix}[grey30]nothing to do")
         return
 
     for item in files:
         input_path, dest_path, operation = item
+        input_path = input_path.strip()
+        dest_path = dest_path.strip()
 
         if os.path.isfile(dest_path) and args.overwrite == False:
             print(f'{prefix}[blue]skiping duplicate... [yellow]{command_aliases[operation]}[white] {input_path.split("/")[-1]} [yellow]to[white] {dest_path}')
@@ -150,9 +152,12 @@ for current_script_path in args.script_path:
 yaml_regex = re.compile(r'^\s*-{3,}(.+?)-{3,}', re.DOTALL)
 
 
-blocks = []
+blocks : List[Block] = []
 for script in scripts:
     new_args = vars(args)
+
+    # remove comments
+    script = re.sub(r'^ *\#.*\n', '', script, 0, re.MULTILINE)
 
     yaml_match = re.search(yaml_regex, script)
     if yaml_match:
@@ -160,10 +165,13 @@ for script in scripts:
         for arg_name in vars(args):
             if arg_name in parsed_yaml:
                 new_args[arg_name] = parsed_yaml[arg_name]
+    
+    # remove yaml section
+    script = re.sub(yaml_regex, '', script)
 
     blocks.extend(parse_whole_content(script, new_args['root']))
 routine_blocks = list(filter(lambda x: x.type == 'routine', blocks))
-non_routine_blocks = list(set(blocks).difference(routine_blocks))
+non_routine_blocks = [block for block in blocks if block not in routine_blocks]
 
             
 
@@ -175,7 +183,7 @@ def run_block(block : Block, prefix=''):
     if block.input_set.name:
         print(f"{prefix}[green]evaluating [blue]{block.input_set.name}")
 
-    move_pairs(result)
+    move_pairs(result, prefix=prefix)
 
     print('\n')
 

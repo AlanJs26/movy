@@ -1,5 +1,4 @@
-daemon: true
+daemon: false
 force: true
 terminal: false
-simulate: true
 root: C:/Users/alanj/Downloads

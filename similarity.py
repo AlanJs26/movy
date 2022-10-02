@@ -1,14 +1,10 @@
-from skimage.metrics import structural_similarity
-import cv2
 from utils import check_ext
-# import numpy as np
-
-import fitz
 import os
 
 
-def convert_pdf2img(input_file: str, output_name: str):
+def convert_pdf2img(input_file: str, output_name: str) -> str:
     """Converts pdf to image and generates a file by page"""
+    import fitz
 
     # Open the document
     pdfIn = fitz.open(input_file)
@@ -34,7 +30,11 @@ def convert_pdf2img(input_file: str, output_name: str):
     return output_name
 
 
-def pdf_similarity(first_pdf:str, second_pdf:str):
+def pdf_similarity(first_pdf:str, second_pdf:str) -> int:
+    """Return a score based in the visual similarity between two pdfs"""
+    import cv2
+    from skimage.metrics import structural_similarity
+
     if check_ext(first_pdf, 'pdf'):
         convert_pdf2img(first_pdf, 'first.png')
 

@@ -122,14 +122,20 @@ with open(args.history,'r', encoding='utf-8') as f:
 # DONE -> add a more robust destination string placeholders
 #     DONE -> regex groups
 #     DONE -> filter specific string format
-# TODO -> add windows support
-#     TODO -> launch script by a executable file (in the same way as autohot key
+# DONE -> add windows support
+#     DONE -> launch script by a executable file (in the same way as autohot key
 #             create a separate program that converts a movy script into an executable)
-#     TODO -> system tray
+#     DONE -> system tray
+# TODO -> add load file as parameter in any command, allowing to pick data from csv files
+#     TODO -> add way to write these data directly in the script file 
+# TODO -> add an "output" action that pipes all matches to the next block
+# TODO -> add machine learning document classification
+# TODO -> add document tags output / new name for file suggestion
+# TODO -> create more ways for handling name conflicts
+# TODO -> add file duplicate detection
 # TODO -> match folders
 # TODO -> add "run external command" action
-# TODO -> add aliases
-# TODO -> write README A
+# TODO -> write README
 
 
 if args.undo:
@@ -137,7 +143,6 @@ if args.undo:
 
     with open(args.history,'w', encoding='utf-8') as f:
         f.write(file_history.toString().encode('cp850', 'replace').decode('cp850'))
-        # f.write(file_history.toString())
     exit()
 
 if len(args.script_path) == 0:
@@ -173,9 +178,14 @@ for script in scripts:
 routine_blocks = list(filter(lambda x: x.type == 'routine', blocks))
 non_routine_blocks = [block for block in blocks if block not in routine_blocks]
 
-            
+default_root = os.getcwd()
 
 def run_block(block : Block, prefix=''):
+    if block.root:
+        os.chdir(block.root)
+    else:
+        os.chdir(default_root)
+
     result = block.eval(file_history)
     with open(args.history,'w', encoding='utf-8') as f:
         f.write(file_history.toString().encode('cp850', 'replace').decode('cp850'))

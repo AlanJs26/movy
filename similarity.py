@@ -1,9 +1,14 @@
 from utils import check_ext
-import os
+from os import makedirs
+from os.path import isfile, exists, join
 
 
 def convert_pdf2img(input_file: str, output_name: str) -> str:
     """Converts pdf to image and generates a file by page"""
+
+    if not check_ext(input_file, 'pdf'):
+        return ""
+
     import fitz
 
     # Open the document
@@ -14,8 +19,8 @@ def convert_pdf2img(input_file: str, output_name: str) -> str:
 
     page = pdfIn[0] # first page
 
-    if not os.path.exists('converted'):
-        os.makedirs('converted')
+    if not exists('converted'):
+        makedirs('converted')
 
     # zoom_x = 2
     # zoom_y = 2
@@ -23,7 +28,7 @@ def convert_pdf2img(input_file: str, output_name: str) -> str:
     # mat = fitz.Matrix(zoom_x, zoom_y)
     # pix = page.getPixmap(matrix=mat, alpha=False)
     pix = page.getPixmap(alpha=False)
-    pix.writePNG(os.path.join('converted/', output_name))
+    pix.writePNG(join('converted/', output_name))
     
     pdfIn.close()
 

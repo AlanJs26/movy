@@ -153,6 +153,7 @@ def parse_whole_content(text, root_path : Optional[str] = './') -> List[Block]:
             block.type = 'routine'
                 
 
+        block.root = root_path
         input_rule_set.root = root_path
         blocks.append(block)
         count += 1

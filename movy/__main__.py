@@ -42,8 +42,8 @@ parser.add_argument('-u','--undo',   action='store_true',
                     help='undo last change')
 parser.add_argument('--interval',    action='store', default=60,    type=int,
                     help='interval used at the daemon update (seconds)')
-parser.add_argument('--history',    action='store', default=os.path.join(os.getcwd(), 'history.txt'),    type=lambda x: dir_path(x,True),
-                    help='path to the history file')
+# parser.add_argument('--history',    action='store', default=os.path.join(os.getcwd(), 'history.txt'),    type=lambda x: dir_path(x,True),
+#                     help='path to the history file')
 parser.add_argument('-r', '--root',    action='store', default='./',    type=dir_path,
                     help='folder to be used as root')
 

@@ -44,6 +44,11 @@ class CommandToken():
 
         return new_command
             
+    def get_deepest_child(self) -> 'CommandToken':
+        if self.children:
+            return self.children[-1].get_deepest_child()
+        else:
+            return self
 
     def flat_children(self):
         flat_children:list['CommandToken'] = self._copy().children
@@ -74,7 +79,7 @@ class ArgumentToken():
 
     @staticmethod
     def regex():
-        return re.compile(r'^[A-Za-z ]*:')
+        return re.compile(r'^[A-Za-z_ ]*:')
 
 
 @dataclass
@@ -91,7 +96,7 @@ class RuleToken():
 
     @staticmethod
     def regex():
-        return re.compile(r'^[\(\)A-Za-z ]*:')
+        return re.compile(r'^[\(\)A-Za-z_ ]*:')
 
 @dataclass
 class ActionToken():
@@ -106,19 +111,27 @@ class ActionToken():
 
     @staticmethod
     def regex():
-        return re.compile(r'^[\(\)A-Za-z ]*->')
+        return re.compile(r'^[\(\)A-Za-z_ ]*->')
 
 
 class Document:
-    def __init__(self, file:str):
+    def __init__(self, file:Optional[str]=None, text:Optional[str]=None):
+        if not file and not text:
+            raise Exception('You must specify which file to open')
+
         self.blocks: List[Block] = [] 
         self.root = os.getcwd()
         self.metadata: dict = {}
-        self.file = file
+        if file:
+            self.file = file
+            with open(file,'r', encoding='utf-8') as f:
+                self.content = f.read()
+        elif text:
+            self.file = 'None'
+            self.content = text
 
-        with open(file,'r', encoding='utf-8') as f:
-            self.content = f.read()
-            self.load(self.content)
+        self.load(self.content)
+
 
 
     def load(self, content: str):
@@ -143,6 +156,8 @@ class Document:
                 commands = self._parse_commands(grouped_actions)
 
                 # print('------')
+                # rprint(grouped_commands)
+                # rprint(grouped_actions)
                 # rprint(commands)
                 for command in commands:
                     if isinstance(command, RuleToken):
@@ -180,7 +195,7 @@ class Document:
 
     def _convert_arguments(self, items: list[ArgumentToken]) -> list[Argument]:
         def convert(item: ArgumentToken) -> Argument:
-            return Argument(item.name, self._convert_expressions(item.content))
+            return Argument(item.name.strip(), self._convert_expressions(item.content))
 
         return list(map(convert, items))
 
@@ -250,11 +265,14 @@ class Document:
         if len(raw_command.children) == 1:
             rule_arguments = raw_command.children
         elif raw_command.children:
-            rule_arguments = raw_command.children[-1].children
-            raw_command.children[-1].children = []
+            if re.search(ArgumentToken.regex(), raw_command.children[0].get_deepest_child().command):
+                rule_arguments = raw_command.children
+            else:
+                rule_arguments = raw_command.children[-1].children
+                raw_command.children[-1].children = []
 
-            raw_command.children[0] = CommandToken('',children=[raw_command.children[0]]) 
-            rule_content.extend(self._parse_expressions(raw_command.children, invert=True))
+                raw_command.children[0] = CommandToken('',children=[raw_command.children[0]]) 
+                rule_content.extend(self._parse_expressions(raw_command.children, invert=True))
 
         # Parse Arguments
         parsed_arguments:list[ArgumentToken] = []
@@ -434,7 +452,6 @@ class Document:
 
     def _remove_empty_lines(self, content:str) -> str:
         empty_lines_regex = re.compile(r'^\s*$\n', flags=re.MULTILINE)
-
         return re.sub(empty_lines_regex, '', content)
 
     def _find_line(self, query:str):
@@ -476,6 +493,10 @@ class Document:
     def _remove_comments(self, content:str) -> str:
         content = re.sub(r'(\n^)?#.*', '', content)
 
+        single_closed_brackets_regex = re.compile(r'^\s+}\n', flags=re.MULTILINE)
+
+        content = re.sub(single_closed_brackets_regex, '}\n', content)
+
         return content
 
     def _parse_metadata(self, content:str) -> str:
@@ -501,6 +522,7 @@ class Document:
 
     def add_block(self, block: Block):
         block.root = self.root
+        block.metadata = self.metadata
 
         self.blocks.append(block)
 

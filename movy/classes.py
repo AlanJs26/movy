@@ -57,12 +57,29 @@ class PipeItem():
             'flags': flags
         }
 
+    def __repr__(self):
+        output = 'PipeItem('
+        output += f'filepath: {self.filepath},'
+        output += f'flags: {self.flags},'
+        output += f'data: {self.data}'
+        output += ')'
+        return output
+
 class Pipe():
     def __init__(self, items: list[PipeItem], root:str):
         self.original_items = set(items)
         self.items = set(items)
         self.root = root
         self.mode: str = 'and' 
+
+    def __repr__(self):
+        output = 'Pipe(items: ['
+        for item in self.items:
+            output += '\n    ' + repr(item) + '\n'
+
+        output+='])'
+        return output
+
 
     def add(self, callback: Callable[[str], Iterable[PipeItem]]):
         for item in callback(self.root):
@@ -102,7 +119,10 @@ class Expression():
         })
     
     @staticmethod
-    def eval_content(content: 'list[str|Expression]', pipe_item: PipeItem) -> str|Regex:
+    def eval_list(content: 'list[str|Expression]|None', pipe_item: PipeItem) -> str|Regex:
+        if not content:
+            return ''
+
         output = ''
         for item in content:
             if isinstance(item, str):
@@ -123,7 +143,9 @@ class Expression():
 class Argument():
     def __init__(self, name:str, content:list[str|Expression]):
         self.name = name
-        self.content = content
+
+        self.content = [(item.lstrip() if isinstance(item,str) else item) for item in content]
+        self.raw_content = content
 
     def __repr__(self):
         return f"Argument(name: '{self.name}', content: {self.content})"
@@ -230,6 +252,7 @@ class Block:
         self.root: str
         self.name = name
         self.commands: List[Input_rule|Destination_rule] = []
+        self.metadata: dict = {}
 
     def __str__(self):
         output = ''
@@ -242,15 +265,16 @@ class Block:
 
         return output
 
-    def eval(self, history: FileHistory) -> None:
-        items: list[PipeItem] = []
-        # from rich import print as rprint
+    def eval(self, history: FileHistory, pipe: Optional[Pipe]=None) -> Pipe:
+        if not pipe:
+            items: list[PipeItem] = []
+            # from rich import print as rprint
 
-        for item in os.listdir(self.root):
-            if os.path.isfile(os.path.join(self.root, item)):
-                items.append(PipeItem(os.path.join(self.root, item), []))
+            for item in os.listdir(self.root):
+                if os.path.isfile(os.path.join(self.root, item)):
+                    items.append(PipeItem(os.path.join(self.root, item), []))
 
-        pipe = Pipe(items, self.root)
+            pipe = Pipe(items, self.root)
 
         def attach_flags(command: Input_rule):
             def new_filter(pipe_item: PipeItem):
@@ -267,9 +291,11 @@ class Block:
                 pipe.add(command.add_callback)
                 pipe.filter(attach_flags(command))
             else:
+                if 'simulate' in self.metadata and self.metadata['simulate'] == True:
+                    command.simulate = True
                 command.eval(pipe)
 
-
+        return pipe
 
 class Destination_rule:
     valid_operators = ['or', 'and', 'end']
@@ -281,8 +307,12 @@ class Destination_rule:
             raise Exception('Invalid Operator')
 
         self.name = name
-        self.content = content
+
+        self.content = [(item.lstrip() if isinstance(item,str) else item) for item in content]
+        self.raw_content = content
+
         self.arguments = arguments
+        self.simulate = False
 
     def __repr__(self):
         output = f'[green]Action (name: [cyan]{self.name}[green], operator: [cyan]{self.operator}[green])  '
@@ -302,6 +332,25 @@ class Destination_rule:
 
         return output
 
+    def _get_argument(self, key:str):
+        for argument in self.arguments:
+            if argument.name == key:
+                return argument.content
+        return None
+
+    def _eval_argument(self, key:str, pipe_item: PipeItem):
+        arg = self._get_argument(key)
+        if arg:
+            return Expression.eval_list(arg, pipe_item)
+        return None
+
+    def _eval_raw_content(self, pipe_item: PipeItem):
+        return Expression.eval_list(self.raw_content, pipe_item)
+
+    def _eval_content(self, pipe_item: PipeItem):
+        return Expression.eval_list(self.content, pipe_item)
+
+    @abstractmethod
     def eval(self, pipe: Pipe) -> None:
         raise NotImplementedError('Eval not implemented')
 
@@ -316,7 +365,10 @@ class Input_rule:
 
         self.flags: list[str] = flags
         self.name = name
-        self.content:list[str|Expression] = content
+
+        self.content = [(item.lstrip() if isinstance(item,str) else item) for item in content]
+        self.raw_content = content
+
         self.arguments: list[Argument] = arguments
 
     def __repr__(self):
@@ -336,13 +388,25 @@ class Input_rule:
             output += repr(child)
 
 
-        return output
+        return output+'\n'
 
     def _get_argument(self, key:str):
         for argument in self.arguments:
             if argument.name == key:
                 return argument.content
         return None
+
+    def _eval_argument(self, key:str, pipe_item: PipeItem):
+        arg = self._get_argument(key)
+        if arg:
+            return Expression.eval_list(arg, pipe_item)
+        return None
+
+    def _eval_raw_content(self, pipe_item: PipeItem):
+        return Expression.eval_list(self.raw_content, pipe_item)
+
+    def _eval_content(self, pipe_item: PipeItem):
+        return Expression.eval_list(self.content, pipe_item)
 
     @abstractmethod
     def add_callback(self, root:str) -> Iterable[PipeItem]:

@@ -1,12 +1,11 @@
-from utils import check_ext
 from os import makedirs
 from os.path import isfile, exists, join
-
+from .utils import extension, tmp_folder
 
 def convert_pdf2img(input_file: str, output_name: str) -> str:
     """Converts pdf to image and generates a file by page"""
 
-    if not check_ext(input_file, 'pdf'):
+    if not extension(input_file) == 'pdf':
         return ""
 
     import fitz
@@ -40,14 +39,14 @@ def pdf_similarity(first_pdf:str, second_pdf:str) -> int:
     import cv2
     from skimage.metrics import structural_similarity
 
-    if check_ext(first_pdf, 'pdf'):
+    if extension(first_pdf) == 'pdf':
         convert_pdf2img(first_pdf, 'first.png')
 
         first = cv2.imread('converted/first.png')
     else:
         first = cv2.imread(first_pdf)
 
-    if check_ext(second_pdf, 'pdf'):
+    if extension(second_pdf) == 'pdf':
         convert_pdf2img(second_pdf, 'second.png')
 
         second = cv2.imread('converted/second.png')

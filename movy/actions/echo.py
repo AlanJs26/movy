@@ -8,7 +8,7 @@ class Echo(Destination_rule):
     def eval(self, pipe:Pipe):
 
         for item in pipe.items:
-            content = Expression.eval_content(self.content, item)
+            content = self._eval_content(item)
 
             if isinstance(content, Regex):
                 raise Exception('Echo does not support Regex as argument')

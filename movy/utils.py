@@ -3,12 +3,13 @@ from rich import print as rprint
 import re
 from typing import Optional, Tuple, Union
 
-def check_ext(text: str, extension: str) -> bool:
-    return os.path.splitext(text)[1].lower()[1:] == extension
-    # return bool(re.search('.+\\.'+extension+'$', text, flags=re.IGNORECASE))
+tmp_folder = '/tmp'
+
+def extension(text: str) -> str:
+    return os.path.basename(os.path.splitext(text)[1]).casefold().strip().replace('.', '')
 
 def get_file_content(file:str, max_lines=10, max_line_length=200) -> str:
-    if check_ext(file, 'pdf'):
+    if extension(file) == 'pdf':
         import fitz
 
         try:
@@ -236,46 +237,3 @@ def parse_action(text:str, action_type:str, pattern_string : Optional[str] = Non
         return new_text, True, action_results
 
     return text, False, action_results
-
-
-def parse_placeholder(destination_item: Tuple[str, Union[str,None]], input_match):
-    dest_action,dest_name = destination_item
-
-    if dest_action == 'ignore':
-        return ''
-
-    command_match = re.search(r'((?P<command>\w+)\( *)?(?P<content>[\w\.]+)( *\))?', dest_action).groupdict()
-
-    if command_match['content'] is None:
-        return None
-
-    new_text = ''
-    dest_action_split = command_match['content'].split('.')
-
-    if len(dest_action_split) > 1:
-        if dest_action_split[1] == 'groups':
-            try:
-                if dest_action_split[2].isnumeric():
-                    dest_action_split[2] = int(dest_action_split[2])
-                new_text = input_match[2][dest_action_split[0]]['groups'][dest_action_split[2]]
-            except:
-                return None
-    elif command_match['content'] in input_match[2]:
-        new_text = input_match[2][command_match['content']]['string']
-
-    if new_text:
-        if command_match['command'] is not None:
-            if command_match['command'] == 'lowercase':
-                new_text = new_text.lower()
-            elif command_match['command'] == 'uppercase':
-                new_text = new_text.upper()
-            elif command_match['command'] == 'titlecase':
-                new_text = new_text.title()
-        
-        return new_text
-
-    parsed_action_text, parse_status, _ = parse_action(input_match[0], dest_action)
-    if parse_status == False:
-        return None
-
-    return parsed_action_text

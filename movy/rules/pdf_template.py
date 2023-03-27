@@ -1,6 +1,6 @@
 from ..classes import Input_rule, Regex, Expression, PipeItem, Argument
 from os.path import join
-from ..utils import extension, tmp_folder
+from ..utils import extension, tmp_folder, RuleException
 from rich import print as rprint
 
 def pdf2img(input_file: str, output_name: str) -> str:
@@ -66,18 +66,18 @@ class PDF_Template(Input_rule):
     def filter_callback(self, pipe_item: PipeItem) -> bool:
 
         if self.content:
-            raise Exception('pdf_template only accepts arguments as input')
+            raise RuleException(self.name, 'this rule only accepts arguments as input')
         if extension(pipe_item.filepath) != 'pdf':
-            raise Exception('pdf_template only support pdf files')
+            raise RuleException(self.name, 'this rule only support pdf files')
 
         base_file = self._eval_argument('base_file', pipe_item)
 
         if not base_file:
-            raise Exception('base_file argument not provided')
+            raise RuleException(self.name, 'base_file argument not found')
         elif isinstance(base_file, Regex):
-            raise Exception('Regex is not supported as base_file')
+            raise RuleException(self.name, 'base_file does not accept regexp')
         elif extension(base_file) != 'pdf':
-            raise Exception('base_file should be a pdf file')
+            raise RuleException(self.name, 'base_file should be a pdf file')
 
         if not self.base_file_png:
             self.base_file_png = pdf2img(base_file, 'first.png')
@@ -86,9 +86,9 @@ class PDF_Template(Input_rule):
         target_score = self._eval_argument('score', pipe_item)
 
         if not isinstance(target_score, str):
-            raise Exception('score must be a number')
+            raise RuleException(self.name, 'score must be a number')
         if not target_score.isdecimal():
-            raise Exception('score must be a number')
+            raise RuleException(self.name, 'score must be a number')
 
         score = pdf_similarity(self.base_file_png, second)*100
 

@@ -5,10 +5,10 @@ import subprocess
 from pystray import MenuItem, Icon, Menu
 
 try:
-    with open('settings.yaml') as f:
+    with open('settings.yaml', encoding='utf-8') as f:
         settings = {"daemon": True, **yaml.load(f, Loader=yaml.loader.SafeLoader)}
 except Exception as e:
-    with open('settings.yaml', 'w') as f:
+    with open('settings.yaml', 'w', encoding='utf-8') as f:
         f.write('''
 daemon: true
 terminal: false
@@ -59,7 +59,7 @@ for key in settings:
 if should_open_terminal:
     run_on_terminal(" ".join(command_args))
 else:
-    logfile = open(log_path, 'w')
+    logfile = open(log_path, 'w', encoding='utf-8')
 
     a = None
     def start_process():

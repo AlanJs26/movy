@@ -1,17 +1,18 @@
 from ..classes import Input_rule, Regex, Expression, PipeItem, Argument
 from fnmatch import fnmatch
 from ..utils import extension
+from ..utils import RuleException
 
 class Extension(Input_rule):
     def __init__(self, name: str, operator:str, content: list[str|Expression], arguments: list[Argument], flags: list[str]):
         super().__init__(name,operator,content,arguments,flags)
 
     def filter_callback(self, pipe_item: PipeItem) -> bool:
-        content = Expression.eval_list(self.content, pipe_item)
+        content = self._eval_content(pipe_item)
         path_extension = extension(pipe_item.filepath)
 
         if not content:
-            raise Exception('extension require content')
+            raise RuleException(self.name, 'content field is empty')
 
         if isinstance(content, Regex):
             if content.search(path_extension):

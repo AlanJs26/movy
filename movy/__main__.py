@@ -11,7 +11,7 @@ def dir_path(string, asfile=False):
         if not os.path.isfile(new_string):
             try:
                 os.makedirs(os.path.dirname(new_string), exist_ok=True)
-                open(new_string, 'a').close()
+                open(new_string, 'a', encoding='utf-8').close()
             except:
                 print(f'[red]"{string}" is not a valid file')
                 return

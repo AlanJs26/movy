@@ -5,6 +5,8 @@ import os
 from datetime import datetime
 import re
 from copy import copy
+from .utils import ActionException, RuleException
+from rich import print as rprint
 
 class Regex():
     def __init__(self, content:str, flags:list[str]):
@@ -66,6 +68,8 @@ class PipeItem():
         return output
 
 class Pipe():
+    valid_modes = ['and', 'or', 'reset']
+
     def __init__(self, items: list[PipeItem], root:str):
         self.original_items = set(items)
         self.items = set(items)
@@ -82,29 +86,55 @@ class Pipe():
 
 
     def add(self, callback: Callable[[str], Iterable[PipeItem]]):
-        for item in callback(self.root):
-            self.items.add(item)
+        try:
+            for item in callback(self.root):
+                self.items.add(item)
+        except RuleException as e:
+            rprint(str(e))
 
     def filter(self, callback: Callable[[PipeItem], bool]):
         if self.mode == 'and':
             for item in copy(self.items):
-                result = callback(item)
-                if result == False:
-                    self.items.remove(item)
+                try:
+                    result = callback(item)
+                    if result == False:
+                        self.items.remove(item)
+                except RuleException as e:
+                    rprint(str(e))
         elif self.mode == 'reset':
             self.items = copy(self.original_items)
             for item in copy(self.items):
-                result = callback(item)
-                if result == False:
-                    self.items.remove(item)
+                try:
+                    result = callback(item)
+                    if result == False:
+                        self.items.remove(item)
+                except RuleException as e:
+                    rprint(str(e))
         elif self.mode == 'or':
             for item in copy(self.original_items):
-                result = callback(item)
-                if result == True:
-                    self.items.add(item)
+                try:
+                    result = callback(item)
+                    if result == True:
+                        self.items.add(item)
+                except RuleException as e:
+                    rprint(str(e))
 
-# TODO -> Add more rules and actions
-# TODO -> Implement cli
+class Property():
+    def __init__(self, filepath:str):
+        self.filepath = filepath
+
+    @property
+    def islink(self):
+        from os.path import islink
+        return islink(self.filepath)
+    @property
+    def isfile(self):
+        from os.path import isfile
+        return isfile(self.filepath)
+    @property
+    def isdir(self):
+        from os.path import isdir
+        return isdir(self.filepath)
 
 class Expression():
     def __init__(self, content:str):
@@ -115,7 +145,8 @@ class Expression():
 
         return eval(self.content, {
             **item.data,
-            'basename': basename
+            'basename': basename,
+            'property': Property(item.filepath)
         })
     
     @staticmethod
@@ -134,7 +165,11 @@ class Expression():
         if Regex.is_valid(output):
             return Regex.parse(output)
 
-        return output
+        return Expression._escape_characters(output)
+
+    @staticmethod
+    def _escape_characters(text: str) -> str:
+        return text.replace(r'\/', '/').replace('\\}', '}').replace('\\{', '{')
 
     def __repr__(self):
         return f'Expression({self.content})'
@@ -287,24 +322,29 @@ class Block:
         for i,command in enumerate(self.commands):
             if isinstance(command, Input_rule):
                 if i>0:
-                    pipe.mode = command.operator
+                    for op in command.operator:
+                        if op in Pipe.valid_modes:
+                            pipe.mode = op
+                            break
                 pipe.add(command.add_callback)
                 pipe.filter(attach_flags(command))
             else:
-                if 'simulate' in self.metadata and self.metadata['simulate'] == True:
+                if 'simulate' in self.metadata and self.metadata['simulate'] == 'true':
                     command.simulate = True
-                command.eval(pipe)
+                try:
+                    command.eval(pipe)
+                    if 'clear' in command.operator:
+                        pipe.filter(lambda _:False)
+                except ActionException as e:
+                    rprint(str(e))
 
         return pipe
 
 class Destination_rule:
-    valid_operators = ['or', 'and', 'end']
+    valid_operators = ['or', 'and', 'clear']
 
-    def __init__(self, name: str, content: list[str|Expression], arguments: list[Argument], operator: str):
-        self.operator = operator or self.valid_operators[0]
-
-        if self.operator not in self.valid_operators:
-            raise Exception('Invalid Operator')
+    def __init__(self, name: str, content: list[str|Expression], arguments: list[Argument], operator: list[str]):
+        self.operator = operator or [self.valid_operators[0]] # or
 
         self.name = name
 
@@ -358,10 +398,7 @@ class Input_rule:
     valid_operators = ['or', 'and', 'reset']
 
     def __init__(self, name: str, operator:str, content: list[str|Expression], arguments: list[Argument], flags: list[str]):
-        self.operator = operator or self.valid_operators[0]
-
-        if self.operator not in self.valid_operators:
-            raise Exception('Invalid Operator')
+        self.operator = operator or [self.valid_operators[0]]
 
         self.flags: list[str] = flags
         self.name = name

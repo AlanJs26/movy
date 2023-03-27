@@ -1,5 +1,6 @@
 from ..classes import Input_rule, Regex, Expression, PipeItem, Argument
 from fnmatch import fnmatch
+from ..utils import RuleException
 
 class Path(Input_rule):
     def __init__(self, name: str, operator:str, content: list[str|Expression], arguments: list[Argument], flags: list[str]):
@@ -9,7 +10,7 @@ class Path(Input_rule):
         content = Expression.eval_list(self.content, pipe_item)
 
         if not content:
-            raise Exception('basename require content')
+            raise RuleException(self.name, 'content field is empty')
 
         if isinstance(content, Regex):
             if content.search(pipe_item.filepath):

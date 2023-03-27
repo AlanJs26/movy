@@ -1,4 +1,10 @@
-from movy.__main__ import main
+# from movy.__main__ import main
+from movy.parsing import Document
 
 if __name__ == "__main__":
-    main()
+    document = Document('./movy/scripts/first.movy')
+    document.pretty_print()
+    print('-------------')
+    document.run_blocks()
+
+    # main()

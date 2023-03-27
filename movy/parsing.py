@@ -85,14 +85,15 @@ class ArgumentToken():
 @dataclass
 class RuleToken():
     name: str
-    operator: str
+    operator: list[str]
     content: list[str|ExpressionToken]
     arguments: list[ArgumentToken]
     flags: list[str]
 
     def __post_init__(self):
-        if self.operator and self.operator not in Input_rule.valid_operators:
-            raise SyntaxError(message=f'Unknown operator: {self.operator}')
+        for op in self.operator:
+            if op not in Input_rule.valid_operators:
+                raise SyntaxError(message=f'Unknown operator: {op}')
 
     @staticmethod
     def regex():
@@ -100,14 +101,15 @@ class RuleToken():
 
 @dataclass
 class ActionToken():
-    operator: str
+    operator: list[str]
     name: str
     content: list[str|ExpressionToken]
     arguments: list[ArgumentToken]
 
     def __post_init__(self):
-        if self.operator and self.operator not in Destination_rule.valid_operators:
-            raise SyntaxError(message=f'Unknown operator: {self.operator}')
+        for op in self.operator:
+            if op not in Destination_rule.valid_operators:
+                raise SyntaxError(message=f'Unknown operator: {op}')
 
     @staticmethod
     def regex():
@@ -162,7 +164,7 @@ class Document:
                 for command in commands:
                     if isinstance(command, RuleToken):
                         if command.name not in RULES:
-                            raise Exception('Unknown rule')
+                            raise SyntaxError(message='Unknown rule', file=self.file, lineno=self._find_line(self._squash_expressionstokens(command.content)), content=command.name)
 
                         block.commands.append(
                             RULES[command.name](
@@ -175,7 +177,7 @@ class Document:
                         )
                     else:
                         if command.name not in ACTIONS:
-                            raise Exception('Unknown action')
+                            raise SyntaxError(message='Unknown action', file=self.file, lineno=self._find_line(self._squash_expressionstokens(command.content)), content=command.name)
                         block.commands.append(
                             ACTIONS[command.name](
                                 name=command.name,
@@ -192,6 +194,15 @@ class Document:
             # print(block_strings)
         except SyntaxError as e:
             rprint(str(e))
+
+    def _squash_expressionstokens(self, tokens: list[str|ExpressionToken]) -> str:
+        output = ''
+        for token in tokens:
+            if isinstance(token, str):
+                output += token
+            else:
+                output += token.content
+        return output
 
     def _convert_arguments(self, items: list[ArgumentToken]) -> list[Argument]:
         def convert(item: ArgumentToken) -> Argument:
@@ -302,7 +313,7 @@ class Document:
             rule_flags.append(flag.group(1))
 
         rule_start = re.sub(flags_regex, '', rule_start)
-        rule_operator = rule_start.strip()
+        rule_operator = rule_start.strip().split()
 
         # Remove empty strings
         rule_content = list(filter(lambda x:x, rule_content))
@@ -352,15 +363,18 @@ class Document:
                 
         rule_start = rule_split[0].strip()
 
-        rule_operator = ''
-        rule_split = []
-        for name in rule_start.split(' '):
-            if name in Destination_rule.valid_operators and not rule_operator:
-                rule_operator = name
-                continue
-            rule_split.append(name)
+        # rule_operator = ''
+        # rule_split = []
+        # for name in rule_start.split(' '):
+        #     if name in Destination_rule.valid_operators and not rule_operator:
+        #         rule_operator = name
+        #         continue
+        #     rule_split.append(name)
+        #
+        # rule_name = rule_split[-1] if rule_split else ''
 
-        rule_name = rule_split[-1] if rule_split else ''
+        rule_operator = rule_start.split()
+        rule_name = rule_operator.pop()
 
 
         # Parse Flags
@@ -409,8 +423,9 @@ class Document:
 
         def split_with_delimiter(content:str, delimiter:str):
             content_list = []
+            content = content.replace(f'\\{delimiter}', '&&&&')
             for item in content.split(delimiter):
-                content_list.append(item)
+                content_list.append(item.replace('&&&&', delimiter))
                 content_list.append(delimiter)
 
             return content_list[:-1]

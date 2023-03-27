@@ -1,0 +1,60 @@
+---
+root: /home/alan/Documentos/
+simulate: true
+---
+
+# [[First]]
+# (luz) basename: /fatura/i
+# echo -> {'fatura' if 'luz' in flags else 'NF'} ddd
+# reset basename: /NF/i
+# move -> \/home/alan/Downloads/ 
+# # echo -> 
+
+# [[similarity]]
+# extension: pdf
+# and pdf_template: {
+#     base_file: /home/alan/Downloads/NF_29_227259.pdf
+#     score: 70
+#     verbose: true
+# }
+# echo ->
+
+
+# [[USP]]
+# filecontent: /Universidade de São Paulo|\bUSP\b|(mat|PCC|PCS|PEA|PEF|PHD|PHA|PME|PMI|PMR|PMT|PNV|PQI|PRO|PSI|PTC|PTR)[- ]?[0-9]{4}|politécnica/is {
+#    verbose: false
+#    entities: Universidade de São Paulo,USP,(pcs|pmt|pme|mat)-?[0-9]*,politécnica
+#    radius: 40
+# }
+# move -> G:/Users/Alan/Documents/_Arquivos/PDFs/USP
+
+
+
+[[Faturas]]
+basename: fatura
+and pdf_template: {
+   base_file: /home/alan/Downloads/fatura-Janeiro_23-0202173508.pdf
+   score: 70
+}
+and filecontent: /CS *(?P<numero>[0-9][0-9])/ 
+(luz) and filecontent: /cpf\/cnpj[^\n]+\n(^ *\n)*(?<nome>\w+)/mi 
+
+clear echo -> {f'luz - \{basename(path)\} - \{flags\}'} 
+
+basename: /^NF/
+and filecontent: /social\/nome: *(?P<nome>\w+)/i 
+(nota) and pdf_template: {
+   base_file: /home/alan/Documentos/NF_29_227259.pdf
+   score: 70
+   verbose: true
+} 
+
+clear echo -> {f'nota - \{basename(path)\} - \{nome\}'}
+
+basename: DAS-PGMEI
+and (mei) filecontent: /^(?P<nome>\w+).+[0-9]+\nperíodo/im
+echo -> {f'mei - {basename} - {flags}'} 
+# move -> G:/Users/Alan/Documents/_Arquivos/PDFs/Contas de luz/{titlecase(nome)}/Casa {numero}
+# move -> G:/Users/Alan/Documents/_Arquivos/PDFs/Notas/{titlecase(nome)}
+# move -> G:/Users/Alan/Documents/_Arquivos/PDFs/Mei/{titlecase(nome)}
+

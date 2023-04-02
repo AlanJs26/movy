@@ -1,6 +1,7 @@
 from ..classes import Input_rule, Regex, Expression, PipeItem, Argument
 from os.path import join
-from ..utils import extension, tmp_folder, RuleException
+from ..utils import extension, tmp_folder
+from ..classes.exceptions import RuleException
 from rich import print as rprint
 
 def pdf2img(input_file: str, output_name: str) -> str:
@@ -58,10 +59,11 @@ def pdf_similarity(first_pdf:str, second_pdf:str) -> int:
 
 
 class PDF_Template(Input_rule):
-    def __init__(self, name: str, operator:str, content: list[str|Expression], arguments: list[Argument], flags: list[str]):
+
+    def __init__(self, name: str, operator:str, content: list[str|Expression], arguments: list[Argument], flags: list[str], ignore_all_exceptions=False):
 
         self.base_file_png = ''
-        super().__init__(name,operator,content,arguments,flags)
+        super().__init__(name,operator,content,arguments,flags, ignore_all_exceptions)
 
     def filter_callback(self, pipe_item: PipeItem) -> bool:
 

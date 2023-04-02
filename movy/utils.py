@@ -8,26 +8,6 @@ tmp_folder = '/tmp'
 def extension(text: str) -> str:
     return os.path.basename(os.path.splitext(text)[1]).casefold().strip().replace('.', '')
 
-class RuleException(Exception):
-    def __init__(self, action_name: str, message:str):
-        self.action_name = action_name
-        self.message = message
-
-    def __str__(self):
-        output = f'[red]{self.action_name}: {self.message}'
-
-        return output
-
-class ActionException(Exception):
-    def __init__(self, action_name: str, message:str):
-        self.action_name = action_name
-        self.message = message
-
-    def __str__(self):
-        output = f'[red]{self.action_name}: {self.message}'
-
-        return output
-
 def parse_action(text:str, action_type:str, pattern_string : Optional[str] = None, flags=re.MULTILINE, rule = None) -> Tuple[str,bool]:
     new_text = ''
     non_text_transformers = ['template']

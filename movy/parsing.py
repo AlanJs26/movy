@@ -151,6 +151,14 @@ class Document:
 
                 block = Block(name)
 
+                if 'ignore_all_exceptions' in self.metadata:
+                    ignore_all_exceptions = bool(self.metadata['ignore_all_exceptions'])
+                else:
+                    ignore_all_exceptions = False
+
+                block.ignore_all_exceptions = ignore_all_exceptions
+
+
                 content = self._remove_empty_lines(content)
 
                 grouped_commands = self._group_brackets(content)
@@ -166,24 +174,37 @@ class Document:
                         if command.name not in RULES:
                             raise SyntaxError(message='Unknown rule', file=self.file, lineno=self._find_line(self._squash_expressionstokens(command.content)), content=command.name)
 
+                        if 'ignore_exceptions' in self.metadata:
+                            ignore_exceptions = self.metadata['ignore_exceptions']
+                        else:
+                            ignore_exceptions = False
+
                         block.commands.append(
                             RULES[command.name](
                                 name=command.name,
                                 operator=command.operator,
-                                content=self._convert_expressions(command.content),
+                                content=self._convert_expressions(command.content, ignore_exceptions),
                                 arguments=self._convert_arguments(command.arguments),
-                                flags=command.flags
+                                flags=command.flags,
+                                ignore_all_exceptions=ignore_all_exceptions
                             )
                         )
                     else:
                         if command.name not in ACTIONS:
                             raise SyntaxError(message='Unknown action', file=self.file, lineno=self._find_line(self._squash_expressionstokens(command.content)), content=command.name)
+
+                        if 'ignore_exceptions' in self.metadata:
+                            ignore_exceptions = self.metadata['ignore_exceptions']
+                        else:
+                            ignore_exceptions = True
+
                         block.commands.append(
                             ACTIONS[command.name](
                                 name=command.name,
-                                content=self._convert_expressions(command.content),
+                                content=self._convert_expressions(command.content, ignore_exceptions),
                                 arguments=self._convert_arguments(command.arguments),
-                                operator=command.operator
+                                operator=command.operator,
+                                ignore_all_exceptions=ignore_all_exceptions
                             )
                         )
 
@@ -194,6 +215,7 @@ class Document:
             # print(block_strings)
         except SyntaxError as e:
             rprint(str(e))
+            self.blocks = []
 
     def _squash_expressionstokens(self, tokens: list[str|ExpressionToken]) -> str:
         output = ''
@@ -210,11 +232,11 @@ class Document:
 
         return list(map(convert, items))
 
-    def _convert_expressions(self, items: list[str|ExpressionToken]) -> list[str|Expression]:
+    def _convert_expressions(self, items: list[str|ExpressionToken], ignore_exceptions = False) -> list[str|Expression]:
         def convert(item: str|ExpressionToken) -> str|Expression:
             if isinstance(item, str):
                 return item
-            return Expression(item.content)
+            return Expression(item.content, ignore_exceptions)
 
         return list(map(convert, items))
 
@@ -273,6 +295,7 @@ class Document:
         rule_content:list[str|ExpressionToken] = [rule_split[1]]
         rule_arguments: list[CommandToken] = []
 
+        # rprint(raw_command)
         if len(raw_command.children) == 1:
             rule_arguments = raw_command.children
         elif raw_command.children:
@@ -284,6 +307,8 @@ class Document:
 
                 raw_command.children[0] = CommandToken('',children=[raw_command.children[0]]) 
                 rule_content.extend(self._parse_expressions(raw_command.children, invert=True))
+
+
 
         # Parse Arguments
         parsed_arguments:list[ArgumentToken] = []
@@ -346,9 +371,12 @@ class Document:
             else:
                 rule_arguments = raw_command.children
 
+
+
         # Parse Arguments
         parsed_arguments:list[ArgumentToken] = []
 
+        # rprint(rule_arguments)
         prev:Optional[ArgumentToken] = None
         for argument in rule_arguments:
             if re.search(ArgumentToken.regex(), argument.command):
@@ -512,6 +540,9 @@ class Document:
 
         content = re.sub(single_closed_brackets_regex, '}\n', content)
 
+        closed_brackets_without_space_regex = re.compile(r'}\n', flags=re.MULTILINE)
+        content = re.sub(closed_brackets_without_space_regex, '} \n', content)
+
         return content
 
     def _parse_metadata(self, content:str) -> str:
@@ -531,7 +562,18 @@ class Document:
 
         metadata = match_dict['metadata'].strip()
 
-        self.metadata = yaml.load(metadata, yaml.BaseLoader)
+        def convert_types(yaml_dict):
+            for key in yaml_dict:
+                if yaml_dict[key] in ['True', 'true']:
+                    yaml_dict[key] = True
+                elif yaml_dict[key] in ['False', 'false']:
+                    yaml_dict[key] = False
+                elif str(yaml_dict[key]).isdigit():
+                    yaml_dict[key] = int(yaml_dict[key])
+
+            return yaml_dict
+
+        self.metadata = convert_types(yaml.load(metadata, yaml.BaseLoader))
         
         return re.sub(metadata_regex, '', content)
 
@@ -546,10 +588,12 @@ class Document:
             rprint(block.__str__())
 
     def run_blocks(self):
-        history = FileHistory()
         for block in self.blocks:
             rprint(f'[green]evaluating [blue]{block.name}')
-            block.eval(history)
+            pipe = block.eval()
+            if not pipe.items:
+                rprint(f'    [grey50]nothing to do')
+            print('')
 
 if __name__ == '__main__':
     document = Document('./scripts/first.movy')

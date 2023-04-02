@@ -1,9 +1,9 @@
 from ..classes import Input_rule, Regex, Expression, PipeItem, Argument, Property
-from ..utils import RuleException
+from ..classes.exceptions import RuleException
 
 class HasProperty(Input_rule):
-    def __init__(self, name: str, operator:str, content: list[str|Expression], arguments: list[Argument], flags: list[str]):
-        super().__init__(name,operator,content,arguments,flags)
+    def __init__(self, name: str, operator:str, content: list[str|Expression], arguments: list[Argument], flags: list[str], ignore_all_exceptions=False):
+        super().__init__(name,operator,content,arguments,flags, ignore_all_exceptions)
 
     def filter_callback(self, pipe_item: PipeItem) -> bool:
         content = self._eval_content(pipe_item)

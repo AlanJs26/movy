@@ -1,11 +1,11 @@
 from ..classes import Input_rule, Regex, Expression, PipeItem, Argument
 from os.path import basename
 from fnmatch import fnmatch
-from ..utils import RuleException
+from ..classes.exceptions import RuleException
 
 class File(Input_rule):
-    def __init__(self, name: str, operator:str, content: list[str|Expression], arguments: list[Argument], flags: list[str]):
-        super().__init__(name,operator,content,arguments,flags)
+    def __init__(self, name: str, operator:str, content: list[str|Expression], arguments: list[Argument], flags: list[str], ignore_all_exceptions=False):
+        super().__init__(name,operator,content,arguments,flags, ignore_all_exceptions)
 
     def filter_callback(self, pipe_item: PipeItem) -> bool:
         content = Expression.eval_list(self.content, pipe_item)

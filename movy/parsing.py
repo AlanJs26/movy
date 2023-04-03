@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from copy import deepcopy
 from .rules import RULES
 from .actions import ACTIONS
+from rich.rule import Rule
+from rich.panel import Panel
 
 
 class SyntaxError(Exception):
@@ -402,7 +404,7 @@ class Document:
         # rule_name = rule_split[-1] if rule_split else ''
 
         rule_operator = rule_start.split()
-        rule_name = rule_operator.pop()
+        rule_name = rule_operator.pop() if rule_operator else '' 
 
 
         # Parse Flags
@@ -588,12 +590,37 @@ class Document:
             rprint(block.__str__())
 
     def run_blocks(self):
+        is_simulating = False
+
+        rprint(Panel.fit(f'[green underline]Running[blue not underline] "{os.path.basename(self.file)}"[green] in [blue]"{self.root}"', border_style='green'))
+        cwd = os.getcwd()
+
         for block in self.blocks:
-            rprint(f'[green]evaluating [blue]{block.name}')
+
+            if 'simulate' in block.metadata:
+                if not (block.metadata['simulate'] and is_simulating):
+                    rprint(Rule('[yellow]:warning: Simulating :warning:', style='yellow'))
+
+                is_simulating = block.metadata['simulate']
+
+
+            rprint(f'[green underline]evaluating[blue not underline] {block.name}')
             pipe = block.eval()
             if not pipe.items:
                 rprint(f'    [grey50]nothing to do')
             print('')
+
+            if 'simulate' in block.metadata:
+                if not (block.metadata['simulate'] and is_simulating):
+                    rprint(Rule('[yellow]:warning: Simulation end :warning:', style='yellow'))
+
+        if is_simulating:
+            rprint(Rule('[yellow]:warning: Simulation end :warning:', style='yellow'))
+
+        os.chdir(cwd)
+
+
+
 
 if __name__ == '__main__':
     document = Document('./scripts/first.movy')

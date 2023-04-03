@@ -29,6 +29,7 @@ class Block:
         return output
 
     def eval(self, pipe: Optional[Pipe]=None) -> Pipe:
+        os.chdir(self.root)
         if not pipe:
             items: list[PipeItem] = []
             # from rich import print as rprint

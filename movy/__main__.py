@@ -1,7 +1,11 @@
-from time import sleep
 import os
-from rich import print
+from glob import glob
+from copy import copy
+from time import sleep
+
 from argparse import RawTextHelpFormatter, ArgumentParser
+from rich import print
+
 from .parsing import Document
 
 def dir_path(string, asfile=False):
@@ -23,29 +27,36 @@ def dir_path(string, asfile=False):
 
 
 def string_parse(string):
-    if string:
-        new_string = dir_path(string, True)
-        if new_string:
-            return new_string
-    print('please provide a valid path to proceed')
-    return None
+    if not string:
+        print('please provide a valid name to proceed')
+        return None
+    return string
 
 parser = ArgumentParser(description='Move, copy and rename files programmatically', formatter_class=RawTextHelpFormatter)
 
-parser.add_argument('script_path',     action='store', default=[],         type=string_parse, nargs='+',
-                    help='path to the script (accepts more than one script at same time)')
+parser.add_argument('blocks',     action='store', default=[],         type=string_parse, nargs='*',
+                    help='which blocks to run')
+parser.add_argument('--config',    action='store', default=os.path.expanduser('~/.movy'),    type=dir_path,
+                    help='config folder')
 parser.add_argument('-d','--daemon',   action='store_true',
                     help='runs the program as a daemon')
 parser.add_argument('-s','--simulate',   action='store_true',
                     help='display only. Do not move, delete or copy files')
-parser.add_argument('-u','--undo',   action='store_true',
-                    help='undo last change')
 parser.add_argument('--interval',    action='store', default=60,    type=int,
                     help='interval used at the daemon update (seconds)')
+parser.add_argument('-r', '--root',    action='store', default='./',    type=dir_path,
+                    help='overwrite the folder to be used as root in all scripts')
+
+# parser.add_argument('script_path',     action='store', default=[],         type=string_parse, nargs='+',
+#                     help='path to the script (accepts more than one script at same time)')
+
+# parser.add_argument('-u','--undo',   action='store_true',
+#                     help='undo last change')
 # parser.add_argument('--history',    action='store', default=os.path.join(os.getcwd(), 'history.txt'),    type=lambda x: dir_path(x,True),
 #                     help='path to the history file')
-parser.add_argument('-r', '--root',    action='store', default='./',    type=dir_path,
-                    help='folder to be used as root')
+
+if not os.path.isdir(os.path.expanduser('~/.movy')):
+    os.makedirs(os.path.expanduser('~/.movy'))
 
 args = parser.parse_args()
 
@@ -80,6 +91,10 @@ args = parser.parse_args()
 # TODO -> add "run external command" action
 # TODO -> write README
 
+
+# TODO -> pack script into a commandline tool
+
+
 def main():
     # if args.undo:
     #     move_pairs(file_history.previous_items(), history=file_history) 
@@ -88,11 +103,34 @@ def main():
     #         f.write(file_history.toString().encode('cp850', 'replace').decode('cp850'))
     #     exit()
 
-    if len(args.script_path) == 0:
-        print("please provide a script file")
+    if args.root == None:
         exit()
 
-    documents: list[Document] = [Document(script) for script in args.script_path]
+    scripts = glob(os.path.join(args.config, 'scripts')+'/*.movy')
+
+    if not scripts:
+        print(f'[red]there are no scripts in "{os.path.join(args.config, "scripts")}"')
+        exit()
+
+
+    documents: list[Document] = [Document(script) for script in scripts]
+
+    found_blocks = 0
+    for document in documents:
+        for block in copy(document.blocks):
+            if args.blocks and block.name not in args.blocks:
+                document.blocks.remove(block)
+                continue
+            if args.simulate == True:
+                block.metadata['simulate'] = True
+            if args.root != './':
+                block.root = args.root
+            found_blocks += 1
+        # document.pretty_print()
+
+    if not found_blocks:
+        print(f"[red]wasn't found any block in scripts")
+        exit()
 
     if args.daemon:
         print(f'Running as daemon (updating after {args.interval} seconds)')
@@ -105,5 +143,10 @@ def main():
         except:
             print('\nexiting...')
     else:
-        for document in documents:
-            document.run_blocks()
+        try:
+            for document in documents:
+                document.run_blocks()
+        except KeyboardInterrupt:
+            print('\n\n[red not bold]exiting...')
+
+

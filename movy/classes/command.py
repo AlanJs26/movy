@@ -4,6 +4,7 @@ from abc import abstractmethod
 from .pipe import PipeItem, Pipe
 from rich import print as rprint
 from .exceptions import ActionException
+from copy import copy
 
 
 class Destination_rule:
@@ -30,13 +31,15 @@ class Destination_rule:
                 output += repr(item)
                 if i+1 < len(self.content):
                     output += ','
-            output += ']\n'
+            output += ']'
 
         if self.arguments:
             output += '=>\n    '
 
             for child in self.arguments:
                 output += repr(child)
+        else:
+            output += '\n'
 
         return output
 
@@ -59,7 +62,9 @@ class Destination_rule:
         return Expression.eval_list(self.content, pipe_item)
 
     def eval(self, pipe: Pipe) -> None:
-        for item in pipe.items:
+        for item in copy(pipe.items):
+            if item.deleted:
+                continue
             try:
                 self.eval_item(item, pipe)
             except ActionException as e:
@@ -79,7 +84,6 @@ class Input_rule:
 
         if all(item not in self.required_operators for item in self.operator):
             self.operator.insert(0, self.valid_operators[0])
-        print(self.operator)
 
         self.flags: list[str] = flags
         self.name = name
@@ -100,16 +104,15 @@ class Input_rule:
                 output += repr(item)
                 if i+1 < len(self.content):
                     output += ','
-            output += ']\n'
+            output += ']'
 
         if self.arguments:
             output += '=>\n'
-
-        for child in self.arguments:
-            output += '        '+repr(child)+'\n'
-        if self.arguments:
+            for child in self.arguments:
+                output += '        '+repr(child)+'\n'
             output += '\n'
-
+        else:
+            output += '\n'
 
         return output
 

@@ -15,15 +15,17 @@ class Trash(Destination_rule):
             raise ActionException(self.name, 'this action does not accept content')
 
         if os.path.isfile(item.filepath):
-            if self._eval_argument('confirm', item) != 'false':
-                choice = Confirm.ask(f'[red]delete "{item.filepath}"?')
-                if not choice:
-                    return
             if self._eval_argument('silent', item) != 'true':
-                rprint(f'[red]Trash: [green]{item.filepath}')
+                rprint(f'[red]Trash: [green]{os.path.basename(item.filepath)}')
 
             if not self.simulate:
+                if self._eval_argument('confirm', item) != 'false':
+                    choice = Confirm.ask(f'[red]trash "{os.path.basename(item.filepath)}"?', default=False)
+                    if not choice:
+                        return
                 os.system(f'trash "{item.filepath}"')
+
+            item.deleted = True
 
         else:
             raise ActionException(self.name, 'this action can only trash files')

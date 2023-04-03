@@ -12,6 +12,8 @@ class PipeItem():
         self.filepath = filepath
         self.flags = flags
 
+        self.deleted = False
+
         self.data:dict = {
             'path': filepath,
             'flags': flags

@@ -76,7 +76,8 @@ class Expression():
                 **item.data,
                 'os.path': os.path,
                 'upper': lambda x:x.upper(),
-                'basename': os.path.basename(item.filepath),
+                'basename': os.path.basename(os.path.splitext(item.filepath)[0]),
+                'filename': os.path.basename(item.filepath),
                 'extension': extension(item.filepath),
                 'property': Property(item.filepath)
             })

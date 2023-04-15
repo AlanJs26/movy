@@ -3,7 +3,12 @@ from movy.parsing import Document
 from rich import print as rprint
 from rich.console import Console
 
+from movy.utils import LetterPrompt
+
 if __name__ == "__main__":
+
+    # print(LetterPrompt.ask("alan", choices=['jose', 'santos']))
+
     # console = Console()
     #
     # document = Document('./movy/scripts/first.movy')

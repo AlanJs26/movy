@@ -2,7 +2,7 @@ from ..classes import Input_rule, Regex, Expression, PipeItem, Argument, Propert
 from ..classes.exceptions import RuleException
 
 class HasProperty(Input_rule):
-    def __init__(self, name: str, operator:str, content: list[str|Expression], arguments: list[Argument], flags: list[str], ignore_all_exceptions=False):
+    def __init__(self, name: str, operator:list[str], content: list[str|Expression], arguments: list[Argument], flags: list[str], ignore_all_exceptions=False):
         super().__init__(name,operator,content,arguments,flags, ignore_all_exceptions)
 
     def filter_callback(self, pipe_item: PipeItem) -> bool:
@@ -18,16 +18,9 @@ class HasProperty(Input_rule):
         if content not in supported_properties:
             raise RuleException(self.name, 'unknown property')
 
-        properties = Property(pipe_item.filepath)
+        properties = Property(pipe_item.filepath, pipe_item.data)
 
-        if content == 'islink':
-            return properties.islink
-        elif content == 'isfile':
-            return properties.isfile
-        elif content == 'isdir':
-            return properties.isdir
-
-        return False
+        return bool(properties[content])
 
 
 

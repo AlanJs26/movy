@@ -4,8 +4,13 @@ from rich import print as rprint
 from rich.console import Console
 
 from movy.utils import LetterPrompt
+from movy.classes.content import Property
 
 if __name__ == "__main__":
+
+    # prop = Property('/home/alan/Downloads/comprovante.pdf', {'a': 'jose'})
+    # rprint(prop.isfile)
+
 
     # print(LetterPrompt.ask("alan", choices=['jose', 'santos']))
 

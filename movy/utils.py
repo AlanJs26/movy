@@ -6,6 +6,11 @@ tmp_folder = '/tmp'
 def extension(text: str) -> str:
     return os.path.basename(os.path.splitext(text)[1]).casefold().strip().replace('.', '')
 
+def parse_int(text) -> int|None:
+    if isinstance(text, str) and text.isdecimal():
+        return int(text)
+    return None
+
 
 class LetterPrompt(PromptBase):
     def check_choice(self, value):

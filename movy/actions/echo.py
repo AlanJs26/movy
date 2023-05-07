@@ -7,7 +7,7 @@ class Echo(Destination_rule):
         super().__init__(name, content, arguments, operator, ignore_all_exceptions)
 
     def eval_item(self, item:PipeItem, pipe: Pipe):
-        content = self._eval_content(item)
+        content = self._eval_raw_content(item)
 
         if isinstance(content, Regex):
             raise ActionException(self.name, 'cannot use Regex as argument')

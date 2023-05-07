@@ -1,3 +1,4 @@
+
 class RuleException(Exception):
     def __init__(self, action_name: str, message:str):
         self.action_name = action_name
@@ -28,4 +29,6 @@ class ExpressionException(Exception):
         {self.message}'''
 
         return output
+
+
 

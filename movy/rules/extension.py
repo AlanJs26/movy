@@ -4,7 +4,7 @@ from ..utils import extension
 from ..classes.exceptions import RuleException
 
 class Extension(Input_rule):
-    def __init__(self, name: str, operator:str, content: list[str|Expression], arguments: list[Argument], flags: list[str], ignore_all_exceptions=False):
+    def __init__(self, name: str, operator:list[str], content: list[str|Expression], arguments: list[Argument], flags: list[str], ignore_all_exceptions=False):
         super().__init__(name,operator,content,arguments,flags, ignore_all_exceptions)
 
     def filter_callback(self, pipe_item: PipeItem) -> bool:

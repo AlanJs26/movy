@@ -34,6 +34,8 @@ def string_parse(string):
 
 parser = ArgumentParser(description='Move, copy and rename files programmatically', formatter_class=RawTextHelpFormatter)
 
+parser.add_argument('--file',     action='store', default=[],         type=string_parse, nargs='*',
+                    help='run file')
 parser.add_argument('blocks',     action='store', default=[],         type=string_parse, nargs='*',
                     help='which blocks to run')
 parser.add_argument('--config',    action='store', default=os.path.expanduser('~/.movy'),    type=dir_path,
@@ -106,12 +108,14 @@ def main():
     if args.root == None:
         exit()
 
-    scripts = glob(os.path.join(args.config, 'scripts')+'/*.movy')
+    if not args.file:
+        scripts = glob(os.path.join(args.config, 'scripts')+'/*.movy')
+    else:
+        scripts = args.file
 
     if not scripts:
         print(f'[red]there are no scripts in "{os.path.join(args.config, "scripts")}"')
         exit()
-
 
     documents: list[Document] = [Document(script) for script in scripts]
 

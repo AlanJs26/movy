@@ -35,13 +35,17 @@ class PipeItem():
         return output.getvalue()
 
 class Pipe():
-    valid_modes = ['and', 'or', 'reset']
+    valid_modes = ['and', 'or', 'reset', 'pass']
 
     def __init__(self, items: list[PipeItem], root:str):
         self.original_items = set(items)
         self.items = set(items)
         self.root = root
         self.mode: str = 'and' 
+
+        from .command import Destination_rule, Input_rule
+
+        self.commands: list['Input_rule|Destination_rule'] = []
 
         self.ignore_all_exceptions = False
 
@@ -63,33 +67,42 @@ class Pipe():
                 rprint(str(e))
 
     def filter(self, callback: Callable[[PipeItem], bool]):
-        if self.mode == 'and':
-            for item in copy(self.items):
-                try:
-                    result = callback(item)
-                    if result == False:
+
+        match self.mode:
+            case 'pass':
+                for item in self.items:
+                    try:
+                        callback(item)
+                    except RuleException as e:
+                        if not self.ignore_all_exceptions:
+                            rprint(str(e))
+            case 'and':
+                for item in copy(self.items):
+                    try:
+                        result = callback(item)
+                        if result == False:
+                            self.items.remove(item)
+                    except RuleException as e:
                         self.items.remove(item)
-                except RuleException as e:
-                    self.items.remove(item)
-                    if not self.ignore_all_exceptions:
-                        rprint(str(e))
-        elif self.mode == 'reset':
-            self.items = copy(self.original_items)
-            for item in copy(self.items):
-                try:
-                    result = callback(item)
-                    if result == False:
+                        if not self.ignore_all_exceptions:
+                            rprint(str(e))
+            case 'reset':
+                self.items = copy(self.original_items)
+                for item in copy(self.items):
+                    try:
+                        result = callback(item)
+                        if result == False:
+                            self.items.remove(item)
+                    except RuleException as e:
                         self.items.remove(item)
-                except RuleException as e:
-                    self.items.remove(item)
-                    if not self.ignore_all_exceptions:
-                        rprint(str(e))
-        elif self.mode == 'or':
-            for item in copy(self.original_items):
-                try:
-                    result = callback(item)
-                    if result == True:
-                        self.items.add(item)
-                except RuleException as e:
-                    if not self.ignore_all_exceptions:
-                        rprint(str(e))
+                        if not self.ignore_all_exceptions:
+                            rprint(str(e))
+            case 'or':
+                for item in copy(self.original_items):
+                    try:
+                        result = callback(item)
+                        if result == True:
+                            self.items.add(item)
+                    except RuleException as e:
+                        if not self.ignore_all_exceptions:
+                            rprint(str(e))

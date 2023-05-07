@@ -40,6 +40,8 @@ class Block:
 
             pipe = Pipe(items, self.root)
 
+        pipe.commands = self.commands
+
         pipe.ignore_all_exceptions = self.ignore_all_exceptions
 
         def attach_history_filter(command: Input_rule):
@@ -64,7 +66,7 @@ class Block:
                 if 'not' in command.operator:
                     result = not result
                 if result:
-                    pipe_item.flags.extend(command.flags)
+                    pipe_item.flags.extend(flag for flag in command.flags if flag not in pipe_item.flags)
                 return result
             return new_filter
 
@@ -72,11 +74,12 @@ class Block:
 
         for i,command in enumerate(self.commands):
             if isinstance(command, Input_rule):
-                if i>0:
-                    for op in command.operator:
-                        if op in Pipe.valid_modes:
-                            pipe.mode = op
-                            break
+                for op in command.operator:
+                    if op in pipe.valid_modes:
+                        pipe.mode = op
+                        break
+                if i==0 and command.default_operator in command.operator:
+                    pipe.mode = 'and'
                 pipe.add(attach_history_add(command))
                 pipe.filter(attach_flags(command))
             else:

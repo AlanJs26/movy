@@ -43,6 +43,7 @@ class Move(Destination_rule):
         item.deleted = True
 
         rprint(f'[yellow not bold]Rename: [green]{path.basename(item.filepath)} [blue]-> {path.split(content_path)[0]+"/" if path.split(content_path)[0] else ""}[bold]{new_name}')
+
     def eval_item(self, item: PipeItem, pipe: Pipe):
         content = self._eval_content(item)
 
@@ -55,8 +56,9 @@ class Move(Destination_rule):
 
 
         if not path.isdir(content):
-            if self._eval_argument('makedirs', item) == 'true' and not self.simulate:
-                os.makedirs(content)
+            if self._eval_argument('makedirs', item) == 'true':
+                if not self.simulate:
+                    os.makedirs(content)
             else:
                 raise ActionException(self.name, f'directory {content} does not exist. Use the argument "makedirs" to automatically create missing directories')
 

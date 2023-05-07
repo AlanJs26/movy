@@ -47,8 +47,27 @@ class Regex():
 
 
 class Property():
-    def __init__(self, filepath:str):
+    def __init__(self, filepath:str, data:dict={}):
         self.filepath = filepath
+        self.data = data
+
+    def __getitem__(self, name:str):
+        self.__getattr__(name)
+
+    def __getattr__(self, name:str):
+        if name == 'islink':
+            from os.path import islink
+            return islink(self.filepath)
+        elif name == 'isfile':
+            from os.path import isfile
+            return isfile(self.filepath)
+        elif name == 'isdir':
+            from os.path import isdir
+            return isdir(self.filepath)
+        elif name in self.data:
+            return self.data[name]
+
+        return False
 
     @property
     def islink(self):
@@ -72,6 +91,9 @@ class Expression():
         import os.path
 
         try:
+            # From PipeItem
+            # 'path': filepath,
+            # 'flags': flags
             result = eval(self.content, {
                 **item.data,
                 'os.path': os.path,
@@ -79,13 +101,11 @@ class Expression():
                 'basename': os.path.basename(os.path.splitext(item.filepath)[0]),
                 'filename': os.path.basename(item.filepath),
                 'extension': extension(item.filepath),
+                'folderpath': os.path.split(item.filepath)[0],
                 'property': Property(item.filepath)
             })
         except NameError as e:
-            if self.ignore_exceptions:
-                return ''
-            else:
-                raise ExpressionException(self.content, f'Invalid argument {e.name}')
+            raise ExpressionException(self.content, f'Invalid argument {e.name}')
 
         return result
     
@@ -103,7 +123,8 @@ class Expression():
             try:
                 output += str(item.eval(pipe_item))
             except ExpressionException as e:
-                rprint(str(e))
+                if not item.ignore_exceptions:
+                    rprint(str(e))
                 return ''
         
         if Regex.is_valid(output):
@@ -113,7 +134,10 @@ class Expression():
 
     @staticmethod
     def _escape_characters(text: str) -> str:
-        return text.replace(r'\/', '/').replace('\\}', '}').replace('\\{', '{')
+        return (text.replace(r'\/', '/')
+                    .replace('\\}', '}')
+                    .replace('\\{', '{')
+                    .replace('\\:', ':'))
 
     def __repr__(self):
         return f'Expression({self.content})'

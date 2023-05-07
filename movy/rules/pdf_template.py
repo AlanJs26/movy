@@ -60,7 +60,7 @@ def pdf_similarity(first_pdf:str, second_pdf:str) -> int:
 
 class PDF_Template(Input_rule):
 
-    def __init__(self, name: str, operator:str, content: list[str|Expression], arguments: list[Argument], flags: list[str], ignore_all_exceptions=False):
+    def __init__(self, name: str, operator:list[str], content: list[str|Expression], arguments: list[Argument], flags: list[str], ignore_all_exceptions=False):
 
         self.base_file_png = ''
         super().__init__(name,operator,content,arguments,flags, ignore_all_exceptions)

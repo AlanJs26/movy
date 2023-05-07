@@ -1,27 +1,50 @@
-from typing import Iterable
-from .content import Expression, Argument
+from typing import Iterable, Any
+from .content import Expression, Argument, Regex
 from abc import abstractmethod
 from .pipe import PipeItem, Pipe
 from rich import print as rprint
-from .exceptions import ActionException
+from .exceptions import ActionException, RuleException
 from copy import copy
 
 
 class Destination_rule:
     valid_operators = ['or', 'and', 'reset']
+    default_operator = 'or'
+
+    def ensure_string(self, content, msg='You should input a string as argument'):
+        if not isinstance(content, str):
+            raise ActionException(self.name, msg)
+        return content
+
+    def ensure_regex(self, content, msg='You should use Regex as argument'):
+        if not isinstance(content, Regex):
+            raise ActionException(self.name, msg)
+        return content
+
+    def ensure_not_empty(self, content, msg='Input field is empty'):
+        if not content:
+            raise ActionException(self.name, msg)
+        return content
 
     def __init__(self, name: str, content: list[str|Expression], arguments: list[Argument], operator: list[str], ignore_all_exceptions=False):
-        self.operator = operator or [self.valid_operators[0]] # or
+        self.operator = operator or [self.default_operator] # or
 
         self.name = name
 
         self.ignore_all_exceptions = ignore_all_exceptions
 
-        self.content = [(item.lstrip() if isinstance(item,str) else item) for item in content]
+        # self.content = [(item.lstrip() if isinstance(item,str) else item) for item in content]
+        if len(content):
+            self.content = [content[0].lstrip() if isinstance(content[0],str) else content[0], *content[1:]]
+        else:
+            self.content = content
+
         self.raw_content = content
 
         self.arguments = arguments
         self.simulate = False
+
+        self.arguments_defaults:dict[str,Any] = {}
 
     def __repr__(self):
         output = f'[green]Action (name: [cyan]{self.name}[green], operator: [cyan]{self.operator}[green])  '
@@ -44,6 +67,8 @@ class Destination_rule:
         return output
 
     def _get_argument(self, key:str):
+        if key in self.arguments_defaults:
+            return self.arguments_defaults[key]
         for argument in self.arguments:
             if argument.name == key:
                 return argument.content
@@ -76,22 +101,47 @@ class Destination_rule:
         raise NotImplementedError('Eval not implemented')
 
 class Input_rule:
-    valid_operators = ['or', 'and', 'reset', 'not']
-    required_operators = ['or', 'and', 'reset']
+    required_operators = Pipe.valid_modes
+    valid_operators = ['not'] + required_operators
+
+    default_operator = 'or'
+
+
+    def ensure_string(self, content, msg='You should input a string as argument'):
+        if not isinstance(content, str):
+            raise RuleException(self.name, msg)
+        return content
+
+    def ensure_regex(self, content, msg='You should use Regex as argument'):
+        if not isinstance(content, Regex):
+            raise RuleException(self.name, msg)
+        return content
+
+    def ensure_not_empty(self, content, msg='Input field is empty'):
+        if not content:
+            raise RuleException(self.name, msg)
+        return content
 
     def __init__(self, name: str, operator:list[str], content: list[str|Expression], arguments: list[Argument], flags: list[str], ignore_all_exceptions=False):
-        self.operator = operator or [self.valid_operators[0]]
+        self.operator = operator or [self.default_operator]
 
         if all(item not in self.required_operators for item in self.operator):
-            self.operator.insert(0, self.valid_operators[0])
+            self.operator.insert(0, self.default_operator)
 
         self.flags: list[str] = flags
         self.name = name
 
         self.ignore_all_exceptions = ignore_all_exceptions
 
-        self.content = [(item.lstrip() if isinstance(item,str) else item) for item in content]
+        # self.content = [(item.lstrip() if isinstance(item,str) else item) for item in content]
+        if len(content):
+            self.content = [content[0].lstrip() if isinstance(content[0],str) else content[0], *content[1:]]
+        else:
+            self.content = content
+
         self.raw_content = content
+
+        self.arguments_defaults:dict[str,Any] = {}
 
         self.arguments: list[Argument] = arguments
 
@@ -117,10 +167,21 @@ class Input_rule:
         return output
 
     def _get_argument(self, key:str):
+        if key in self.arguments_defaults:
+            return self.arguments_defaults[key]
         for argument in self.arguments:
             if argument.name == key:
                 return argument.content
         return None
+    
+    def _content_to_str(self):
+        output = ''
+        for item in self.content:
+            if isinstance(item, Expression):
+                output += ' '+item.content
+            else:
+                output += ' '+item
+        return output
 
     def _eval_argument(self, key:str, pipe_item: PipeItem):
         arg = self._get_argument(key)

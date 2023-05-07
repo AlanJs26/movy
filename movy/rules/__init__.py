@@ -5,6 +5,8 @@ from .path import Path
 from .file import File
 from .hasproperty import HasProperty
 from .filecontent import FileContent
+from .ifexpression import IfExpression
+from .keywords import Keywords
 
 RULES = {
     'basename': Basename,
@@ -14,6 +16,8 @@ RULES = {
     'pdf_template': PDF_Template,
     'hasproperty': HasProperty,
     'filecontent': FileContent,
+    'if': IfExpression,
+    'keywords': Keywords,
 }
 
 

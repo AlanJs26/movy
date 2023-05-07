@@ -3,8 +3,7 @@ import re
 from rich import print as rprint
 import yaml
 from typing import Optional, List, Tuple
-from dataclasses import dataclass
-from copy import deepcopy
+from dataclasses import dataclass,field
 from .rules import RULES
 from .actions import ACTIONS
 from rich.rule import Rule
@@ -32,46 +31,28 @@ class SyntaxError(Exception):
 '''
 
 @dataclass
-class CommandToken():
-    command: str
-    children: list['CommandToken']
+class BracketToken():
+    content: list['str|BracketToken']
+    raw:str=''
+    type:str = 'bracket'
 
-    def _copy(self):
-        new_command = deepcopy(self)
-
-        if not new_command.children:
-            return new_command
-
-        new_command.children = [child._copy() for child in new_command.children]
-
-        return new_command
-            
-    def get_deepest_child(self) -> 'CommandToken':
-        if self.children:
-            return self.children[-1].get_deepest_child()
-        else:
-            return self
-
-    def flat_children(self):
-        flat_children:list['CommandToken'] = self._copy().children
-
-        offset = 1
-        for i,child in enumerate(self.children):
-            for inner_child in child.flat_children():
-                flat_children.insert(i+offset, inner_child)
-                offset += 1
-                
-        for child in flat_children:
-            for inner_child in flat_children:
-                if inner_child in child.children:
-                    child.children.remove(inner_child)
-
-        return flat_children
-    
+    def to_string(self) -> str:
+        output = ''
+        for item in self.content:
+            if isinstance(item, str):
+                output += item
+            else:
+                output += item.to_string()
+        return output
 
 @dataclass
 class ExpressionToken():
     content: str
+
+
+    @staticmethod
+    def regex():
+        return re.compile(r'^[A-Za-z_ ]*:')
 
 
 @dataclass
@@ -79,9 +60,18 @@ class ArgumentToken():
     name: str
     content: list[str|ExpressionToken]
 
-    @staticmethod
-    def regex():
-        return re.compile(r'^[A-Za-z_ ]*:')
+
+@dataclass
+class CommandToken():
+    command: str
+    children: list['BracketToken|str']
+    raw:str=''
+    type:str = 'string'
+    arguments: list[ArgumentToken] = field(default_factory=lambda: [])
+
+    def __post_init__(self):
+        if not self.raw:
+            self.raw = self.command
 
 
 @dataclass
@@ -167,10 +157,13 @@ class Document:
                 grouped_actions = self._group_actions(grouped_commands)
                 commands = self._parse_commands(grouped_actions)
 
-                # print('------')
+                # print('------grouped_commands')
                 # rprint(grouped_commands)
+                # print('------grouped_actions')
                 # rprint(grouped_actions)
+                # print('------commands')
                 # rprint(commands)
+                # print('----')
                 for command in commands:
                     if isinstance(command, RuleToken):
                         if command.name not in RULES:
@@ -243,19 +236,16 @@ class Document:
         return list(map(convert, items))
 
     def _parse_commands(self, raw_commands:List[CommandToken]) -> list[RuleToken|ActionToken]:
-        action_regex = ActionToken.regex()
-        rule_regex = RuleToken.regex()
-
         
         commands:list[RuleToken|ActionToken] = []
 
         for raw_command in raw_commands:
-            if re.search(rule_regex, raw_command.command):
+            if raw_command.type == 'rule':
                 try:
                     commands.append(self._parse_rule(raw_command))
                 except SyntaxError as e:
                     raise SyntaxError(message=e.message, file=self.file, lineno=self._find_line(raw_command.command),content=raw_command.command)
-            elif re.search(action_regex, raw_command.command):
+            elif raw_command.type == 'action':
                 try:
                     commands.append(self._parse_action(raw_command))
                 except SyntaxError as e:
@@ -265,73 +255,52 @@ class Document:
 
         return commands
 
-    def _parse_expressions(self, raw_commands:list[CommandToken], invert=False):
-        expressions:list[str|ExpressionToken] = []
-        for item in raw_commands:
-            if item.children and invert:
-                expressions.append(item.command)
-                expressions.extend(ExpressionToken(content=child.command) for child in item.flat_children())
-            elif item.command and not item.children and not invert:
-                expressions.append(ExpressionToken(content=item.command))
-            else:
-                expressions.append(item.command)
-                expressions.extend(self._parse_expressions(item.children))
+    def _parse_expression(self, token:BracketToken):
+        return ExpressionToken(token.to_string())
 
-        return expressions
+    def _parse_argument(self, raw_command:BracketToken) -> list[ArgumentToken]:
+        if isinstance(raw_command.content[0], BracketToken):
+            raise Exception('invalid argument')
 
-    def _parse_argument(self, raw_command:CommandToken) -> ArgumentToken:
-        rule_split = raw_command.command.split(':')
-        rule_start = rule_split[0]
+        prev:Optional[ArgumentToken] = None
+        grouped:List[ArgumentToken] = []
+        for token in raw_command.content:
 
-        rule_content:list[str|ExpressionToken] = [rule_split[1]]
+            if isinstance(token, str):
+                split = token.split(':', 1)
+                if len(split) != 2:
+                    raise Exception('invalid argument name')
+                prev = ArgumentToken(split[0], [split[1]])
+                grouped.append(prev)
+                continue
 
-        rule_content.extend(self._parse_expressions(raw_command.children))
+            if not prev:
+                raise Exception('invalid argument format')
 
-        return ArgumentToken(name=rule_start, content=rule_content)
+            if isinstance(token, BracketToken):
+                if token.type == 'argument':
+                    raise Exception('you cannot nest arguments')
+
+                prev.content.append(self._parse_expression(token))
+
+        return grouped
             
 
     def _parse_rule(self, raw_command:CommandToken) -> RuleToken:
-        rule_split = raw_command.command.split(':', 1)
 
         # Parse Commands
-        rule_content:list[str|ExpressionToken] = [rule_split[1]]
-        rule_arguments: list[CommandToken] = []
+        rule_content:list[str|ExpressionToken] = []
 
-        # rprint(raw_command)
-        if len(raw_command.children) == 1:
-            rule_arguments = raw_command.children
-        elif raw_command.children:
-            if re.search(ArgumentToken.regex(), raw_command.children[0].get_deepest_child().command):
-                rule_arguments = raw_command.children
+        for item in raw_command.children:
+            if isinstance(item, BracketToken):
+                rule_content.append(self._parse_expression(item))
             else:
-                rule_arguments = raw_command.children[-1].children
-                raw_command.children[-1].children = []
+                rule_content.append(item)
 
-                raw_command.children[0] = CommandToken('',children=[raw_command.children[0]]) 
-                rule_content.extend(self._parse_expressions(raw_command.children, invert=True))
+        rule_name = raw_command.command.rstrip().split()[-1]
 
 
-
-        # Parse Arguments
-        parsed_arguments:list[ArgumentToken] = []
-
-        prev:Optional[ArgumentToken] = None
-        for argument in rule_arguments:
-            if re.search(ArgumentToken.regex(), argument.command):
-                prev=self._parse_argument(argument)
-                parsed_arguments.append(prev)
-            elif prev:
-                prev.content.append(argument.command)
-                for child in argument.flat_children():
-                    prev.content.append(ExpressionToken(child.command))
-            else:
-                raise SyntaxError(message='Invalid Argument', file=self.file, lineno=self._find_line(argument.command),content=argument.command)
-                
-        rule_start = rule_split[0].strip()
-        rule_name = rule_start.split(' ')[-1]
-
-
-        rule_start = ' '.join(rule_start.split(' ')[:-1])
+        rule_start = ' '.join(raw_command.command.split()[:-1])
 
         # Parse Flags
         flags_regex = re.compile(r'\((.+?)\)')
@@ -342,69 +311,27 @@ class Document:
         rule_start = re.sub(flags_regex, '', rule_start)
         rule_operator = rule_start.strip().split()
 
-        # Remove empty strings
-        rule_content = list(filter(lambda x:x, rule_content))
-        parsed_arguments = list(filter(lambda x:x, parsed_arguments))
-
         if any('->' in item for item in rule_content if isinstance(item, str)):
             raise SyntaxError(message='Actions and rules must be in different lines', file=self.file, lineno=self._find_line(raw_command.command),content=raw_command.command)
-        
 
-        return RuleToken(flags=rule_flags, operator=rule_operator, name=rule_name, content=rule_content, arguments=parsed_arguments)
+        return RuleToken(flags=rule_flags, operator=rule_operator, name=rule_name, content=rule_content, arguments=raw_command.arguments)
 
     def _parse_action(self, raw_command:CommandToken) -> ActionToken:
-        rule_split = raw_command.command.split('->', 1)
-
         # Parse Commands
-        rule_content:list[str|ExpressionToken] = [rule_split[1]]
-        rule_arguments: list[CommandToken] = []
+        rule_content:list[str|ExpressionToken] = []
 
-        # rprint(raw_command)
-        if len(raw_command.children) == 1 and re.search(ArgumentToken.regex(), raw_command.children[0].command):
-            rule_arguments = raw_command.children
-        elif raw_command.children:
-            if not re.search(ArgumentToken.regex(), raw_command.children[0].command):
-                rule_arguments = raw_command.children[-1].children
-
-                raw_command.children[-1].children = []
-
-                raw_command.children[0] = CommandToken('',children=[raw_command.children[0]]) 
-                rule_content.extend(self._parse_expressions(raw_command.children, invert=True))
+        for item in raw_command.children:
+            if isinstance(item, BracketToken):
+                rule_content.append(self._parse_expression(item))
             else:
-                rule_arguments = raw_command.children
+                rule_content.append(item)
+
+        rule_name = raw_command.command.rstrip().split()[-1]
 
 
+        rule_start = ' '.join(raw_command.command.split()[:-1])
 
-        # Parse Arguments
-        parsed_arguments:list[ArgumentToken] = []
-
-        # rprint(rule_arguments)
-        prev:Optional[ArgumentToken] = None
-        for argument in rule_arguments:
-            if re.search(ArgumentToken.regex(), argument.command):
-                prev=self._parse_argument(argument)
-                parsed_arguments.append(prev)
-            elif prev:
-                prev.content.append(argument.command)
-                for child in argument.flat_children():
-                    prev.content.append(ExpressionToken(child.command))
-            else:
-                raise SyntaxError(message='Invalid Argument', file=self.file, lineno=self._find_line(argument.command),content=argument.command)
-                
-        rule_start = rule_split[0].strip()
-
-        # rule_operator = ''
-        # rule_split = []
-        # for name in rule_start.split(' '):
-        #     if name in Destination_rule.valid_operators and not rule_operator:
-        #         rule_operator = name
-        #         continue
-        #     rule_split.append(name)
-        #
-        # rule_name = rule_split[-1] if rule_split else ''
-
-        rule_operator = rule_start.split()
-        rule_name = rule_operator.pop() if rule_operator else '' 
+        rule_operator = rule_start.strip().split()
 
 
         # Parse Flags
@@ -414,83 +341,112 @@ class Document:
 
 
 
-        # Remove empty strings
-        rule_content = list(filter(lambda x:x, rule_content))
-        parsed_arguments = list(filter(lambda x:x, parsed_arguments))
+        # # Remove empty strings
+        # rule_content = list(filter(lambda x:x, rule_content))
+        # parsed_arguments = list(filter(lambda x:x, parsed_arguments))
 
 
 
-        return ActionToken(operator=rule_operator, name=rule_name, content=rule_content, arguments=parsed_arguments)
+        return ActionToken(operator=rule_operator, name=rule_name, content=rule_content, arguments=raw_command.arguments)
         # return RawAction(operator='and', name='basename', content=['fatura'], arguments=[Argument('old', ['jose'])])
 
-    def _group_actions(self, commands:List[CommandToken]) -> List[CommandToken]:
+    def _group_actions(self, tokens:List[BracketToken|str]) -> List[CommandToken]:
         action_regex = ActionToken.regex()
         rule_regex = RuleToken.regex()
 
         prev:Optional[CommandToken] = None
         grouped:List[CommandToken] = []
-        for item in commands:
-            if re.search(rule_regex, item.command):
-                prev = item
-                grouped.append(item)
+        for item in tokens:
+            if isinstance(item, str) and re.search(rule_regex, item):
+                split = item.split(':', 1)
+                prev = CommandToken(command=split[0], children=[split[1]] if split[1] else [], raw='', type='rule')
+                grouped.append(prev)
                 continue
-            if re.search(action_regex, item.command):
-                grouped.append(item)
-                prev = item
+            if isinstance(item, str) and re.search(action_regex, item):
+                split = item.split('->', 1)
+                prev = CommandToken(command=split[0], children=[split[1]] if split[1] else [], raw='', type='action')
+                grouped.append(prev)
                 continue
 
             if not prev:
-                grouped.append(item)
-                continue
+                raise Exception('invalid command')
 
-            prev.children.append(item)
+            if isinstance(item, BracketToken) and item.type == 'argument':
+                prev.arguments = self._parse_argument(item)
+            else:
+                prev.children.append(item)
         
         return grouped
 
-    def _group_brackets(self, content):
-        content_split = content.split('\n')
-        # content_split = re.split(r'\n|(?=->)', content)
+    def _tokenizer(self, content:str):
 
-        def split_with_delimiter(content:str, delimiter:str):
-            content_list = []
-            content = content.replace(f'\\{delimiter}', '&&&&')
-            for item in content.split(delimiter):
-                content_list.append(item.replace('&&&&', delimiter))
-                content_list.append(delimiter)
+        def split_with_delimiter(content_list:list[str], pattern:str, delimiter:str): 
+            count = 0
+            tokens = content_list
 
-            return content_list[:-1]
+            while count < len(tokens):
+                tokens[count] = tokens[count].replace('\\'+pattern, '&&&&')
+                split = re.split(pattern, tokens[count], 1)
+                if len(split) > 1:
+                    split.insert(1,delimiter)
+                    tokens.remove(tokens[count])
+                    tokens[slice(count,count)] = split
+
+                    tokens[count] = tokens[count].replace('&&&&', pattern)
+
+                    count += 2
+                else:
+                    tokens[count] = tokens[count].replace('&&&&', pattern)
+                    count+=1
+
+            return tokens
         
-        def get_deepest_child(raw_command: CommandToken):
-            if raw_command.children:
-                return get_deepest_child(raw_command.children[-1])
-            else:
-                return raw_command
+        tokens = [content]
 
-        content_split = [ new_item for substring in content_split for new_item in split_with_delimiter(substring, '{') ]
-        content_split = [ new_item for substring in content_split for new_item in split_with_delimiter(substring, '}') ]
-        content_split = list(filter(lambda x: x, content_split))
+        tokens = split_with_delimiter(tokens, r'{\n', '&')
+        tokens = split_with_delimiter(tokens, r'{', '{')
+        
+        tokens = split_with_delimiter(tokens, r'}', '}')
+        tokens = [ new_item for substring in tokens for new_item in substring.split('\n') ]
 
-        nest_stack:List[CommandToken] = []
-        grouped:List[CommandToken] = []
-        for item in content_split:
-            if item == '{':
-                prev = grouped[-1]
-                nest_stack.append(get_deepest_child(prev))
-                continue
-            if item == '}':
-                if len(nest_stack) == 0:
-                    raise SyntaxError(message='Mismatched bracket', file=self.file, lineno=self._find_line(grouped[-1].command),content=content)
-                nest_stack.pop()
-                continue
+        tokens = list(filter(lambda x: not re.search(r'^ *$', x), tokens))
 
-            if len(nest_stack) == 0:
-                grouped.append(CommandToken(command=item.rstrip(), children=[]))
-                continue
+        return tokens
 
-            nest_stack[-1].children.append(CommandToken(command=item.rstrip(), children=[]))
+
+    def _group_brackets(self, content):
+        
+        tokens = self._tokenizer(content)
+
+        nest_stack:List[BracketToken] = []
+        grouped:List[BracketToken|str] = []
+        
+        for item in tokens:
+            match item:
+                case '{'|'&':
+                    new_bracket = BracketToken([], '', 'bracket' if item == '{' else 'argument')
+
+                    if len(nest_stack) > 0:
+                        nest_stack[-1].content.append(new_bracket)
+
+                    nest_stack.append(new_bracket)
+                case '}':
+                    if len(nest_stack) == 0:
+                        raise SyntaxError(message='Mismatched bracket', file=self.file, lineno=self._find_line(item),content=content)
+                    bracket = nest_stack.pop()
+                    if len(nest_stack) == 0:
+                        grouped.append(bracket)
+
+                case _:
+                    if len(nest_stack) == 0:
+                        grouped.append(item)
+                    else:
+                        nest_stack[-1].content.append(item)
+
 
         if len(nest_stack) > 0:
-            raise SyntaxError(message='Mismatched bracket', file=self.file, lineno=self._find_line(nest_stack[-1].command),content=content)
+            raise SyntaxError(message='Mismatched bracket', file=self.file, lineno=self._find_line('a'),content=content)
+
         
         return grouped
 
@@ -598,7 +554,7 @@ class Document:
         for block in self.blocks:
 
             if 'simulate' in block.metadata:
-                if not (block.metadata['simulate'] and is_simulating):
+                if block.metadata['simulate'] and not is_simulating:
                     rprint(Rule('[yellow]:warning: Simulating :warning:', style='yellow'))
 
                 is_simulating = block.metadata['simulate']
@@ -611,7 +567,7 @@ class Document:
             print('')
 
             if 'simulate' in block.metadata:
-                if not (block.metadata['simulate'] and is_simulating):
+                if block.metadata['simulate'] and not is_simulating:
                     rprint(Rule('[yellow]:warning: Simulation end :warning:', style='yellow'))
 
         if is_simulating:

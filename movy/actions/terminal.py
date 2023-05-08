@@ -3,7 +3,14 @@ import shlex
 import subprocess
 from rich import print as rprint
 import os
+from dataclasses import dataclass
 
+@dataclass
+class TerminalData():
+    out:str
+
+    def __str__(self):
+        return self.out
 
 class Terminal(Destination_rule):
     def __init__(self, name: str, content: list[str|Expression], arguments: list[Argument], operator: list[str], ignore_all_exceptions=False):
@@ -28,13 +35,10 @@ class Terminal(Destination_rule):
             out = b''
             err = False
 
-        item.data['terminal'] = {
-            "out": ''
-        }
-
+        item.data['terminal'] = TerminalData('')
 
         if not err:
-            item.data['terminal']["out"] = out.decode('utf-8')
+            item.data['terminal'].out = out.decode('utf-8')
 
         if self._eval_argument('verbose', item) == 'true':
             if not err:

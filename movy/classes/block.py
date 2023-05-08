@@ -86,7 +86,14 @@ class Block:
                 if 'simulate' in self.metadata and self.metadata['simulate']:
                     command.simulate = True
                 try:
-                    command.eval(pipe)
+                    if 'all' in command.operator:
+                        try:
+                            command.eval_all(pipe)
+                        except NotImplementedError:
+                            rprint(f"[red] The action '{command.name}' does not support 'all' operator")
+                            continue
+                    else:
+                        command.eval(pipe)
                     self.history.append(command, pipe.items)
                     if 'reset' in command.operator:
                         pipe.filter(lambda _:False)

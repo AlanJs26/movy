@@ -8,8 +8,10 @@ from copy import copy
 
 
 class Destination_rule:
-    valid_operators = ['or', 'and', 'reset']
-    default_operator = 'or'
+    # all: run action on all items (only on supported actions)
+    # reset: reset pipe on next command
+    valid_operators = ['all', 'reset']
+    default_operator = ''
 
     def ensure_string(self, content, msg='You should input a string as argument'):
         if not isinstance(content, str):
@@ -97,10 +99,15 @@ class Destination_rule:
                     rprint(str(e))
 
     @abstractmethod
+    def eval_all(self, pipe: Pipe) -> None:
+        raise NotImplementedError('Eval All not implemented')
+
+    @abstractmethod
     def eval_item(self, item: PipeItem, pipe: Pipe) -> None:
         raise NotImplementedError('Eval not implemented')
 
 class Input_rule:
+    # not: negates the rule
     required_operators = Pipe.valid_modes
     valid_operators = ['not'] + required_operators
 

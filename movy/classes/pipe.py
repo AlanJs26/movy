@@ -1,7 +1,7 @@
 from rich import print as rprint
 from typing import Callable, Iterable
 
-from ..classes.exceptions import RuleException
+from ..classes.exceptions import ExpressionException, RuleException
 from copy import copy
 from rich.console import Console
 from io import StringIO
@@ -62,30 +62,33 @@ class Pipe():
         try:
             for item in callback(self.root):
                 self.items.add(item)
-        except RuleException as e:
+        except (RuleException, ExpressionException) as e:
             if not self.ignore_all_exceptions:
                 rprint(str(e))
 
     def filter(self, callback: Callable[[PipeItem], bool]):
 
         match self.mode:
+            # do not filter
             case 'pass':
                 for item in self.items:
                     try:
                         callback(item)
-                    except RuleException as e:
+                    except (RuleException, ExpressionException) as e:
                         if not self.ignore_all_exceptions:
                             rprint(str(e))
+            # remove items that do not match (difference)
             case 'and':
                 for item in copy(self.items):
                     try:
                         result = callback(item)
                         if result == False:
                             self.items.remove(item)
-                    except RuleException as e:
+                    except (RuleException, ExpressionException) as e:
                         self.items.remove(item)
                         if not self.ignore_all_exceptions:
                             rprint(str(e))
+            # remove items that match from original items (difference)
             case 'reset':
                 self.items = copy(self.original_items)
                 for item in copy(self.items):
@@ -93,16 +96,17 @@ class Pipe():
                         result = callback(item)
                         if result == False:
                             self.items.remove(item)
-                    except RuleException as e:
+                    except (RuleException, ExpressionException) as e:
                         self.items.remove(item)
                         if not self.ignore_all_exceptions:
                             rprint(str(e))
+            # add items that match (union)
             case 'or':
                 for item in copy(self.original_items):
                     try:
                         result = callback(item)
                         if result == True:
                             self.items.add(item)
-                    except RuleException as e:
+                    except (RuleException, ExpressionException) as e:
                         if not self.ignore_all_exceptions:
                             rprint(str(e))
